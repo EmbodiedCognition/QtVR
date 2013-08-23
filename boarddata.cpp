@@ -24,6 +24,7 @@
  ****************************************************************************/
 #include "boarddata.h"
 
+#include <cstdio>
 #include <QGLWidget>
 
 BoardData::BoardData(QObject *parent) :
