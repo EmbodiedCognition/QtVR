@@ -1,0 +1,5 @@
+# ignore (usually) large data files !
+*.c3d
+*.tvd
+*.amc
+
