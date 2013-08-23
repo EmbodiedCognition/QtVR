@@ -17,7 +17,10 @@ if [ "$(basename $(pwd))" = "ode" ]
 then target="."
 fi
 
+mkdir -p $target/include
 ln -sf $source/include/ode $target/include
+
+mkdir -p $target/lib
 ln -sf $source/lib/libode* $target/lib
 
 ls -lR $target
