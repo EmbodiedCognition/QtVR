@@ -26,7 +26,7 @@
 #define MYGLWIDGET_H
 
 #include <QGLWidget>
-#include <GL/GLU.h>
+#include <GL/glu.h>
 #include <QTimer>
 //#include <QGraphicsScene>
 #include "mygraphicsscene.h"

@@ -4,11 +4,10 @@
 #
 #-------------------------------------------------
 
-QT       += core gui opengl sql
+QT += core gui opengl sql widgets
 
 TARGET = QtVR
 TEMPLATE = app
-
 
 SOURCES += main.cpp\
         mainwindow.cpp \
@@ -111,4 +110,9 @@ win32:LIBS += C:/Code/ode_lab/lib/ReleaseDoubleLib/ode_double.lib
 # This linker flag is for MSVC.  It makes the stack larger.
 # This might not be necessary any more, but old versions of
 # ODE were prone to overflow the stack.
-QMAKE_LFLAGS += /STACK:8000000
+win32:QMAKE_LFLAGS += /STACK:8000000
+
+# On Unix, add specific compiler flags for dependent libraries.
+unix:LIBS += -lode -lGL -lglut -lGLU
+unix:LIBS += -L./ode/lib
+unix:INCLUDES += -I./ode/include
