@@ -3,3 +3,9 @@
 *.tvd
 *.amc
 
+# ignore local user's qtcreator settings
+QtVR.pro.user
+
+# ignore whatever is under ./ode/{lib,include}
+ode/lib
+ode/include
