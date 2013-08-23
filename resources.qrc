@@ -1,0 +1,19 @@
+<RCC>
+    <qresource prefix="/icons">
+        <file>data/sx111.gif</file>
+        <file>data/system-exit.png</file>
+        <file>data/view-fullscreen.png</file>
+        <file>data/media-skip-forward-3.png</file>
+        <file>data/link-break-icon.png</file>
+        <file>data/link-icon.png</file>
+        <file>data/media-playback-pause-3.png</file>
+        <file>data/media-playback-stop-3.png</file>
+        <file>data/media-seek-backward-3.png</file>
+        <file>data/media-seek-forward-3.png</file>
+        <file>data/media-skip-backward-3.png</file>
+        <file>data/media-step-right-3.png</file>
+        <file>data/media-step-left-3.png</file>
+        <file>data/media-playback-large.png</file>
+        <file>data/media-playback-start-3.png</file>
+    </qresource>
+</RCC>

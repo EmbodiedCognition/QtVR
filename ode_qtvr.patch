@@ -1,0 +1,1248 @@
+Index: include/ode/common.h
+===================================================================
+--- include/ode/common.h	(revision 1939)
++++ include/ode/common.h	(working copy)
+@@ -107,6 +107,7 @@
+ #define dSin(x) (sinf(x))				/* sine */
+ #define dCos(x) (cosf(x))				/* cosine */
+ #define dFabs(x) (fabsf(x))			/* absolute value */
++#define dAcos(x)    (acosf(x))
+ #define dAtan2(y,x) (atan2f(y,x))		/* arc tangent with 2 args */
+ #define dFMod(a,b) (fmodf(a,b))		/* modulo */
+ #define dFloor(x) floorf(x)			/* floor */
+@@ -142,6 +143,7 @@
+ #define dSin(x) sin(x)
+ #define dCos(x) cos(x)
+ #define dFabs(x) fabs(x)
++#define dAcos(x)   (acos(x))
+ #define dAtan2(y,x) atan2((y),(x))
+ #define dFMod(a,b) (fmod((a),(b)))
+ #define dFloor(x) floor(x)
+@@ -303,6 +305,7 @@
+ };
+ 
+ 
++
+ /* angular motor mode numbers */
+ 
+ enum {
+@@ -318,6 +321,7 @@
+   dVector3 t1;		/* torque applied to body 1 */
+   dVector3 f2;		/* force applied to body 2 */
+   dVector3 t2;		/* torque applied to body 2 */
++  dReal gf[8];    /* generalized constraint forces */
+ } dJointFeedback;
+ 
+ 
+Index: include/ode/contact.h
+===================================================================
+--- include/ode/contact.h	(revision 1939)
++++ include/ode/contact.h	(working copy)
+@@ -31,21 +31,24 @@
+ 
+ 
+ enum {
+-  dContactMu2		= 0x001,
+-  dContactFDir1		= 0x002,
+-  dContactBounce	= 0x004,
+-  dContactSoftERP	= 0x008,
+-  dContactSoftCFM	= 0x010,
+-  dContactMotion1	= 0x020,
+-  dContactMotion2	= 0x040,
+-  dContactMotionN	= 0x080,
+-  dContactSlip1		= 0x100,
+-  dContactSlip2		= 0x200,
++  dContactMu2		  = 0x001, /**< Use axis dependent friction */
++  dContactAxisDep = 0x001, /**< Same as above */
++  dContactFDir1		= 0x002, /**< Use FDir for the first friction value */
++  dContactBounce	= 0x004, /**< Restore collision energy anti-parallel to the normal */
++  dContactSoftERP	= 0x008, /**< Don't use global erp for penetration reduction */
++  dContactSoftCFM	= 0x010, /**< Don't use global cfm for penetration constraint */
++  dContactMotion1	= 0x020, /**< Use a non-zero target velocity for the constraint*/
++  dContactMotion2	= 0x040, 
++  dContactMotionN	= 0x080, 
++  dContactSlip1		= 0x100, /**< Force-dependent slip. */
++  dContactSlip2		= 0x200, 
++  dContactRolling = 0x400, /**< Rolling/Angular friction */
+ 
+   dContactApprox0	= 0x0000,
+   dContactApprox1_1	= 0x1000,
+   dContactApprox1_2	= 0x2000,
+-  dContactApprox1	= 0x3000
++  dContactApprox1_N = 0x4000, /**< For rolling friction*/
++  dContactApprox1	= 0x7000
+ };
+ 
+ 
+@@ -56,8 +59,11 @@
+ 
+   /* only defined if the corresponding flag is set in mode */
+   dReal mu2;
+-  dReal bounce;
+-  dReal bounce_vel;
++  dReal rho; /**< Rolling friction */
++  dReal rho2;
++  dReal rhoN; /**< Spinning friction */
++  dReal bounce; /**< Coefficient of restitution */
++  dReal bounce_vel; /**< Bouncing threshold */
+   dReal soft_erp;
+   dReal soft_cfm;
+   dReal motion1,motion2,motionN;
+Index: include/ode/objects.h
+===================================================================
+--- include/ode/objects.h	(revision 1939)
++++ include/ode/objects.h	(working copy)
+@@ -1042,12 +1042,13 @@
+  * @ingroup bodies
+  */
+ ODE_API const dReal * dBodyGetLinearVel (dBodyID);
+-
++ODE_API void dBodyCopyLinearVel (dBodyID b,dVector3 res);
+ /**
+  * @brief Get the angular velocity of a body.
+  * @ingroup bodies
+  */
+ ODE_API const dReal * dBodyGetAngularVel (dBodyID);
++ODE_API void dBodyCopyAngularVel (dBodyID b,dVector3 res);
+ 
+ /**
+  * @brief Set the mass of a body.
+@@ -1858,13 +1859,12 @@
+  * together. The input is specified in world coordinates.
+  */
+ ODE_API void dJointSetBallAnchor (dJointID, dReal x, dReal y, dReal z);
+-
+-/**
+- * @brief Set the joint anchor point.
+- * @ingroup joints
+- */
++ODE_API void dJointSetBallAnchor1 (dJointID, dReal x, dReal y, dReal z);
++ODE_API void dJointSetBallAnchor1Rel (dJointID, dReal x, dReal y, dReal z);
+ ODE_API void dJointSetBallAnchor2 (dJointID, dReal x, dReal y, dReal z);
++ODE_API void dJointSetBallAnchor2Rel (dJointID, dReal x, dReal y, dReal z);
+ 
++
+ /**
+  * @brief Param setting for Ball joints
+  * @ingroup joints
+@@ -1876,6 +1876,10 @@
+  * @ingroup joints
+  */
+ ODE_API void dJointSetHingeAnchor (dJointID, dReal x, dReal y, dReal z);
++ODE_API void dJointSetHingeAnchor1 (dJointID, dReal x, dReal y, dReal z);
++ODE_API void dJointSetHingeAnchor1Rel (dJointID, dReal x, dReal y, dReal z);
++ODE_API void dJointSetHingeAnchor2 (dJointID, dReal x, dReal y, dReal z);
++ODE_API void dJointSetHingeAnchor2Rel (dJointID, dReal x, dReal y, dReal z);
+ 
+ ODE_API void dJointSetHingeAnchorDelta (dJointID, dReal x, dReal y, dReal z, dReal ax, dReal ay, dReal az);
+ 
+@@ -1995,8 +1999,27 @@
+  * @ingroup joints
+  */
+ ODE_API void dJointSetUniversalAnchor (dJointID, dReal x, dReal y, dReal z);
++ODE_API void dJointSetUniversalAnchor1 (dJointID, dReal x, dReal y, dReal z);
++ODE_API void dJointSetUniversalAnchor1Rel (dJointID, dReal x, dReal y, dReal z);
++ODE_API void dJointSetUniversalAnchor2 (dJointID, dReal x, dReal y, dReal z);
++ODE_API void dJointSetUniversalAnchor2Rel (dJointID, dReal x, dReal y, dReal z);
+ 
+ /**
++ * @brief set both universal joint axes with one call
++ * @ingroup joints
++ *
++ * If you happen to want axis1 to be aligned with the y-axis
++ * and axis2 to be aligned with the x-axis (opposite from the 
++ * default), directly setting either axis will result in parallel 
++ * axes and crash the library.  Rather than set an axis to a dummy
++ * value, you can simply set both at once.
++ *
++ */
++ODE_API void dJointSetUniversalAxes (dJointID, 
++                                     dReal x1, dReal y1, dReal z1,
++                                     dReal x2, dReal y2, dReal z2);
++
++/**
+  * @brief set axis
+  * @ingroup joints
+  */
+@@ -2359,6 +2382,8 @@
+  */
+ ODE_API void dJointSetAMotorParam (dJointID, int parameter, dReal value);
+ 
++ODE_API void dJointAddLMotorForces( dJointID j, dReal force1, dReal force2, dReal force3 );
++
+ /**
+  * @brief set mode
+  * @ingroup joints
+@@ -2382,6 +2407,8 @@
+  */
+ ODE_API void dJointSetLMotorNumAxes (dJointID, int num);
+ 
++ODE_API void dJointAddLMotorForces( dJointID j, dReal force1, dReal force2, dReal force3 );
++
+ /**
+  * @brief Set the AMotor axes.
+  * @param anum selects the axis to change (0,1 or 2).
+Index: include/ode/odemath.h
+===================================================================
+--- include/ode/odemath.h	(revision 1939)
++++ include/ode/odemath.h	(working copy)
+@@ -421,8 +421,17 @@
+  * q will equal n x p. if n is not unit length then p will be unit length but
+  * q wont be.
+  */
++ODE_API void dPlaneSpace (const dVector3 n, dVector3 p, dVector3 q);
+ 
+-ODE_API void dPlaneSpace (const dVector3 n, dVector3 p, dVector3 q);
++/*
++ * Given unit normal vector 'n', find normalized projection 'p' of vector
++ * 'd' onto the planespace and orthonormal vector 'q'.
++ * If 'n' is parallel to 'd', then this will be the same as dPlaneSpace
++ * and return value will be 0.
++ * Otherwise, return value is 1.
++ */
++ODE_API int dDirectedPlaneSpace  (const dVector3 n, const dVector3 d, dVector3 p, dVector3 q);
++
+ /* Makes sure the matrix is a proper rotation */
+ ODE_API void dOrthogonalizeR(dMatrix3 m);
+ 
+Index: include/ode/rotation.h
+===================================================================
+--- include/ode/rotation.h	(revision 1939)
++++ include/ode/rotation.h	(working copy)
+@@ -57,6 +57,10 @@
+ ODE_API void dQMultiply2 (dQuaternion qa, const dQuaternion qb, const dQuaternion qc);
+ /* qa = rotate by inverse of qc, then by inverse of qb */
+ ODE_API void dQMultiply3 (dQuaternion qa, const dQuaternion qb, const dQuaternion qc);
++/* rotate vector v by q*/
++ODE_API void dQMultVec0 (dVector3 res, const dQuaternion q, const dVector3 v);
++/* rotate vector v by inverse of q*/
++ODE_API void dQMultVec1 (dVector3 res, const dQuaternion q, const dVector3 v);
+ 
+ ODE_API void dRfromQ (dMatrix3 R, const dQuaternion q);
+ ODE_API void dQfromR (dQuaternion q, const dMatrix3 R);
+Index: ode/src/collision_cylinder_trimesh.cpp
+===================================================================
+--- ode/src/collision_cylinder_trimesh.cpp	(revision 1939)
++++ ode/src/collision_cylinder_trimesh.cpp	(working copy)
+@@ -973,10 +973,10 @@
+ {
+     const dVector3 &vCylinderPos = cData.m_vCylinderPos;
+ 
+-    Point cCenter(vCylinderPos[0],vCylinderPos[1],vCylinderPos[2]);
++    Point cCenter(OPC_FLOATCAST vCylinderPos[0],OPC_FLOATCAST vCylinderPos[1],OPC_FLOATCAST vCylinderPos[2]);
+ 
+-    Point cExtents(cData.m_fCylinderRadius,cData.m_fCylinderRadius,cData.m_fCylinderRadius);
+-    cExtents[nCYLINDER_AXIS] = cData.m_fCylinderSize * REAL(0.5);
++    Point cExtents(OPC_FLOATCAST cData.m_fCylinderRadius,OPC_FLOATCAST cData.m_fCylinderRadius,OPC_FLOATCAST cData.m_fCylinderRadius);
++    cExtents[nCYLINDER_AXIS] = OPC_FLOATCAST(cData.m_fCylinderSize * REAL(0.5));
+ 
+     Matrix3x3 obbRot;
+ 
+@@ -988,17 +988,17 @@
+     // (e.g. typedef float opc_float;)
+     // However I'm not sure in what header it should be added.
+ 
+-    obbRot[0][0] = /*(float)*/mCylinderRot[0];
+-    obbRot[1][0] = /*(float)*/mCylinderRot[1];
+-    obbRot[2][0] = /*(float)*/mCylinderRot[2];
++    obbRot[0][0] = OPC_FLOATCAST mCylinderRot[0];
++    obbRot[1][0] = OPC_FLOATCAST mCylinderRot[1];
++    obbRot[2][0] = OPC_FLOATCAST mCylinderRot[2];
+ 
+-    obbRot[0][1] = /*(float)*/mCylinderRot[4];
+-    obbRot[1][1] = /*(float)*/mCylinderRot[5];
+-    obbRot[2][1] = /*(float)*/mCylinderRot[6];
++    obbRot[0][1] = OPC_FLOATCAST mCylinderRot[4];
++    obbRot[1][1] = OPC_FLOATCAST mCylinderRot[5];
++    obbRot[2][1] = OPC_FLOATCAST mCylinderRot[6];
+ 
+-    obbRot[0][2] = /*(float)*/mCylinderRot[8];
+-    obbRot[1][2] = /*(float)*/mCylinderRot[9];
+-    obbRot[2][2] = /*(float)*/mCylinderRot[10];
++    obbRot[0][2] = OPC_FLOATCAST mCylinderRot[8];
++    obbRot[1][2] = OPC_FLOATCAST mCylinderRot[9];
++    obbRot[2][2] = OPC_FLOATCAST mCylinderRot[10];
+ 
+     OBB obbCapsule(cCenter,cExtents,obbRot);
+ 
+Index: ode/src/collision_trimesh_box.cpp
+===================================================================
+--- ode/src/collision_trimesh_box.cpp	(revision 1939)
++++ ode/src/collision_trimesh_box.cpp	(working copy)
+@@ -39,7 +39,6 @@
+ 
+ #if dTRIMESH_ENABLED
+ 
+-
+ static void
+ GenerateContact(int in_Flags, dContactGeom* in_Contacts, int in_Stride,
+                 dxGeom* in_g1,  dxGeom* in_g2, int TriIndex,
+@@ -1150,9 +1149,9 @@
+ 
+     // Make OBB
+     OBB Box;
+-    Box.mCenter.x = vPosBox[0];
+-    Box.mCenter.y = vPosBox[1];
+-    Box.mCenter.z = vPosBox[2];
++    Box.mCenter.x = OPC_FLOATCAST vPosBox[0];
++    Box.mCenter.y = OPC_FLOATCAST vPosBox[1];
++    Box.mCenter.z = OPC_FLOATCAST vPosBox[2];
+ 
+     // It is a potential issue to explicitly cast to float 
+     // if custom width floating point type is introduced in OPCODE.
+@@ -1160,21 +1159,21 @@
+     // (e.g. typedef float opc_float;)
+     // However I'm not sure in what header it should be added.
+ 
+-    Box.mExtents.x = /*(float)*/cData.m_vBoxHalfSize[0];
+-    Box.mExtents.y = /*(float)*/cData.m_vBoxHalfSize[1];
+-    Box.mExtents.z = /*(float)*/cData.m_vBoxHalfSize[2];
++    Box.mExtents.x = OPC_FLOATCAST cData.m_vBoxHalfSize[0];
++    Box.mExtents.y = OPC_FLOATCAST cData.m_vBoxHalfSize[1];
++    Box.mExtents.z = OPC_FLOATCAST cData.m_vBoxHalfSize[2];
+ 
+-    Box.mRot.m[0][0] = /*(float)*/mRotBox[0];
+-    Box.mRot.m[1][0] = /*(float)*/mRotBox[1];
+-    Box.mRot.m[2][0] = /*(float)*/mRotBox[2];
++    Box.mRot.m[0][0] = OPC_FLOATCAST mRotBox[0];
++    Box.mRot.m[1][0] = OPC_FLOATCAST mRotBox[1];
++    Box.mRot.m[2][0] = OPC_FLOATCAST mRotBox[2];
+ 
+-    Box.mRot.m[0][1] = /*(float)*/mRotBox[4];
+-    Box.mRot.m[1][1] = /*(float)*/mRotBox[5];
+-    Box.mRot.m[2][1] = /*(float)*/mRotBox[6];
++    Box.mRot.m[0][1] = OPC_FLOATCAST mRotBox[4];
++    Box.mRot.m[1][1] = OPC_FLOATCAST mRotBox[5];
++    Box.mRot.m[2][1] = OPC_FLOATCAST mRotBox[6];
+ 
+-    Box.mRot.m[0][2] = /*(float)*/mRotBox[8];
+-    Box.mRot.m[1][2] = /*(float)*/mRotBox[9];
+-    Box.mRot.m[2][2] = /*(float)*/mRotBox[10];
++    Box.mRot.m[0][2] = OPC_FLOATCAST mRotBox[8];
++    Box.mRot.m[1][2] = OPC_FLOATCAST mRotBox[9];
++    Box.mRot.m[2][2] = OPC_FLOATCAST mRotBox[10];
+ 
+     Matrix4x4 amatrix;
+     Matrix4x4 BoxMatrix = MakeMatrix(vPosBox, mRotBox, amatrix);
+Index: ode/src/collision_trimesh_ccylinder.cpp
+===================================================================
+--- ode/src/collision_trimesh_ccylinder.cpp	(revision 1939)
++++ ode/src/collision_trimesh_ccylinder.cpp	(working copy)
+@@ -979,24 +979,24 @@
+ 
+     const dVector3 &vCapsulePosition = cData.m_vCapsulePosition;
+ 
+-    Point cCenter(/*(float)*/ vCapsulePosition[0], /*(float)*/ vCapsulePosition[1], /*(float)*/ vCapsulePosition[2]);
+-    Point cExtents(/*(float)*/ cData.m_vCapsuleRadius, /*(float)*/ cData.m_vCapsuleRadius,/*(float)*/ cData.m_fCapsuleSize/2);
++    Point cCenter(OPC_FLOATCAST vCapsulePosition[0], OPC_FLOATCAST vCapsulePosition[1], OPC_FLOATCAST vCapsulePosition[2]);
++    Point cExtents(OPC_FLOATCAST cData.m_vCapsuleRadius, OPC_FLOATCAST cData.m_vCapsuleRadius,OPC_FLOATCAST cData.m_fCapsuleSize/2);
+ 
+     Matrix3x3 obbRot;
+ 
+     const dMatrix3 &mCapsuleRotation = cData.m_mCapsuleRotation;
+ 
+-    obbRot[0][0] = /*(float)*/ mCapsuleRotation[0];
+-    obbRot[1][0] = /*(float)*/ mCapsuleRotation[1];
+-    obbRot[2][0] = /*(float)*/ mCapsuleRotation[2];
++    obbRot[0][0] = OPC_FLOATCAST mCapsuleRotation[0];
++    obbRot[1][0] = OPC_FLOATCAST mCapsuleRotation[1];
++    obbRot[2][0] = OPC_FLOATCAST mCapsuleRotation[2];
+ 
+-    obbRot[0][1] = /*(float)*/ mCapsuleRotation[4];
+-    obbRot[1][1] = /*(float)*/ mCapsuleRotation[5];
+-    obbRot[2][1] = /*(float)*/ mCapsuleRotation[6];
++    obbRot[0][1] = OPC_FLOATCAST mCapsuleRotation[4];
++    obbRot[1][1] = OPC_FLOATCAST mCapsuleRotation[5];
++    obbRot[2][1] = OPC_FLOATCAST mCapsuleRotation[6];
+ 
+-    obbRot[0][2] = /*(float)*/ mCapsuleRotation[8];
+-    obbRot[1][2] = /*(float)*/ mCapsuleRotation[9];
+-    obbRot[2][2] = /*(float)*/ mCapsuleRotation[10];
++    obbRot[0][2] = OPC_FLOATCAST mCapsuleRotation[8];
++    obbRot[1][2] = OPC_FLOATCAST mCapsuleRotation[9];
++    obbRot[2][2] = OPC_FLOATCAST mCapsuleRotation[10];
+ 
+     OBB obbCapsule(cCenter,cExtents,obbRot);
+ 
+Index: ode/src/collision_trimesh_ray.cpp
+===================================================================
+--- ode/src/collision_trimesh_ray.cpp	(revision 1939)
++++ ode/src/collision_trimesh_ray.cpp	(working copy)
+@@ -59,19 +59,19 @@
+     Collider.SetFirstContact(FirstContact != 0);
+     Collider.SetClosestHit(ClosestHit != 0);
+     Collider.SetCulling(BackfaceCull != 0);
+-    Collider.SetMaxDist(Length);
++    Collider.SetMaxDist(OPC_FLOATCAST Length);
+ 
+     dVector3 Origin, Direction;
+     dGeomRayGet(RayGeom, Origin, Direction);
+ 
+     /* Make Ray */
+     Ray WorldRay;
+-    WorldRay.mOrig.x = Origin[0];
+-    WorldRay.mOrig.y = Origin[1];
+-    WorldRay.mOrig.z = Origin[2];
+-    WorldRay.mDir.x = Direction[0];
+-    WorldRay.mDir.y = Direction[1];
+-    WorldRay.mDir.z = Direction[2];
++    WorldRay.mOrig.x = OPC_FLOATCAST Origin[0];
++    WorldRay.mOrig.y = OPC_FLOATCAST Origin[1];
++    WorldRay.mOrig.z = OPC_FLOATCAST Origin[2];
++    WorldRay.mDir.x = OPC_FLOATCAST Direction[0];
++    WorldRay.mDir.y = OPC_FLOATCAST Direction[1];
++    WorldRay.mDir.z = OPC_FLOATCAST Direction[2];
+ 
+     /* Intersect */
+     Matrix4x4 amatrix;
+Index: ode/src/collision_trimesh_sphere.cpp
+===================================================================
+--- ode/src/collision_trimesh_sphere.cpp	(revision 1939)
++++ ode/src/collision_trimesh_sphere.cpp	(working copy)
+@@ -36,6 +36,7 @@
+ #if dTRIMESH_ENABLED
+ #include "collision_trimesh_internal.h"
+ 
++
+ #if dTRIMESH_OPCODE
+ 
+ // Ripped from Opcode 1.1.
+@@ -263,10 +264,10 @@
+ 
+     // Sphere
+     Sphere Sphere;
+-    Sphere.mCenter.x = Position[0];
+-    Sphere.mCenter.y = Position[1];
+-    Sphere.mCenter.z = Position[2];
+-    Sphere.mRadius = Radius;
++    Sphere.mCenter.x = OPC_FLOATCAST Position[0];
++    Sphere.mCenter.y = OPC_FLOATCAST Position[1];
++    Sphere.mCenter.z = OPC_FLOATCAST Position[2];
++    Sphere.mRadius = OPC_FLOATCAST Radius;
+ 
+     Matrix4x4 amatrix;
+ 
+Index: ode/src/convex.cpp
+===================================================================
+--- ode/src/convex.cpp	(revision 1939)
++++ ode/src/convex.cpp	(working copy)
+@@ -45,6 +45,13 @@
+ #define dMAX(A,B)  std::max(A,B)
+ #endif
+ 
++#if 1
++#define FLOATCAST (float)
++#else
++#define FLOATCAST
++#endif
++
++
+ //****************************************************************************
+ // Convex public API
+ dxConvex::dxConvex (dSpaceID space,
+@@ -340,9 +347,9 @@
+     dVector3 r  = {p1[0] - p2[0],
+         p1[1] - p2[1],
+         p1[2] - p2[2]};
+-    float a = dCalcVectorDot3(d1, d1);
+-    float e = dCalcVectorDot3(d2, d2);
+-    float f = dCalcVectorDot3(d2, r);
++    float a = FLOATCAST dCalcVectorDot3(d1, d1);
++    float e = FLOATCAST dCalcVectorDot3(d2, d2);
++    float f = FLOATCAST dCalcVectorDot3(d2, r);
+     // Check if either or both segments degenerate into points
+     if (a <= dEpsilon && e <= dEpsilon)
+     {
+@@ -350,9 +357,9 @@
+         s = t = 0.0f;
+         dVector3Copy(p1,c1);
+         dVector3Copy(p2,c2);
+-        return (c1[0] - c2[0])*(c1[0] - c2[0])+
++        return FLOATCAST ((c1[0] - c2[0])*(c1[0] - c2[0])+
+             (c1[1] - c2[1])*(c1[1] - c2[1])+
+-            (c1[2] - c2[2])*(c1[2] - c2[2]);
++            (c1[2] - c2[2])*(c1[2] - c2[2]));
+     }
+     if (a <= dEpsilon)
+     {
+@@ -363,7 +370,7 @@
+     }
+     else
+     {
+-        float c = dCalcVectorDot3(d1, r);
++        float c = FLOATCAST dCalcVectorDot3(d1, r);
+         if (e <= dEpsilon)
+         {
+             // Second segment degenerates into a point
+@@ -373,7 +380,7 @@
+         else
+         {
+             // The general non degenerate case starts here
+-            float b = dCalcVectorDot3(d1, d2);
++            float b = FLOATCAST dCalcVectorDot3(d1, d2);
+             float denom = a*e-b*b; // Always nonnegative
+ 
+             // If segments not parallel, compute closest point on L1 to L2, and
+@@ -424,9 +431,9 @@
+     c2[0] = p2[0] + d2[0] * t;
+     c2[1] = p2[1] + d2[1] * t;
+     c2[2] = p2[2] + d2[2] * t;
+-    return (c1[0] - c2[0])*(c1[0] - c2[0])+
++    return FLOATCAST ((c1[0] - c2[0])*(c1[0] - c2[0])+
+         (c1[1] - c2[1])*(c1[1] - c2[1])+
+-        (c1[2] - c2[2])*(c1[2] - c2[2]);
++        (c1[2] - c2[2])*(c1[2] - c2[2]));
+ }
+ 
+ #if 0
+Index: ode/src/joints/amotor.cpp
+===================================================================
+--- ode/src/joints/amotor.cpp	(revision 1939)
++++ ode/src/joints/amotor.cpp	(working copy)
+@@ -158,26 +158,16 @@
+         dMultiply1_331( reference1, node[0].body->posr.R, r );
+         dMultiply0_331( r, node[0].body->posr.R, axis[0] );
+         dMultiply1_331( reference2, node[1].body->posr.R, r );
+-    }
+-
+-    else     // jds
+-    {
+-        // else if (j->node[0].body) {
+-        // dMultiply1_331 (j->reference1,j->node[0].body->posr.R,j->axis[2]);
+-        // dMultiply0_331 (j->reference2,j->node[0].body->posr.R,j->axis[0]);
+-
++    } else {
+         // We want to handle angular motors attached to passive geoms
+-        dVector3 r;  // axis[2] and axis[0] in global coordinates
+-        r[0] = axis[2][0];
+-        r[1] = axis[2][1];
+-        r[2] = axis[2][2];
+-        r[3] = axis[2][3];
+-        dMultiply1_331( reference1, node[0].body->posr.R, r );
+-        dMultiply0_331( r, node[0].body->posr.R, axis[0] );
+-        reference2[0] += r[0];
+-        reference2[1] += r[1];
+-        reference2[2] += r[2];
+-        reference2[3] += r[3];
++        // Replace missing node.R with identity
++        if (node[0].body) {
++          dMultiply1_331( reference1, node[0].body->posr.R, axis[2] );
++          dMultiply0_331( reference2, node[0].body->posr.R, axis[0] );
++        } else if (node[1].body) {
++          dMultiply0_331( reference1, node[1].body->posr.R, axis[2] );
++          dMultiply1_331( reference2, node[1].body->posr.R, axis[0] );
++        }
+     }
+ }
+ 
+@@ -284,13 +274,12 @@
+     dxJointAMotor* joint = ( dxJointAMotor* )j;
+     dAASSERT( joint && anum >= 0 && anum <= 2 && rel >= 0 && rel <= 2 );
+     checktype( joint, AMotor );
+-    dUASSERT( !( !joint->node[1].body && ( joint->flags & dJOINT_REVERSE ) && rel == 1 ), "no first body, can't set axis rel=1" );
+-    dUASSERT( !( !joint->node[1].body && !( joint->flags & dJOINT_REVERSE ) && rel == 2 ), "no second body, can't set axis rel=2" );
++
+     if ( anum < 0 ) anum = 0;
+     if ( anum > 2 ) anum = 2;
+ 
+     // adjust rel to match the internal body order
+-    if ( !joint->node[1].body && rel == 2 ) rel = 1;
++    if ( (joint->flags & dJOINT_REVERSE) && rel == 2 ) rel = 1;
+ 
+     joint->rel[anum] = rel;
+ 
+@@ -342,7 +331,7 @@
+     if ( joint->mode == dAMotorUser )
+     {
+         if ( anum < 0 ) anum = 0;
+-        if ( anum > 3 ) anum = 3;
++        if ( anum > 2 ) anum = 2;
+         joint->angle[anum] = angle;
+     }
+ }
+@@ -391,8 +380,30 @@
+     checktype( joint, AMotor );
+     if ( anum < 0 ) anum = 0;
+     if ( anum > 2 ) anum = 2;
+-    if ( joint->rel[anum] > 0 )
+-    {
++    
++    // If we're in Euler mode, joint->axis[1] doesn't
++    // have anything sensible in it.  So don't just return
++    // that, find the actual effective axis.
++    // Likewise, the actual axis of rotation for the
++    // the other axes is different from what's stored.
++    if ( joint->mode == dAMotorEuler  ) {
++      dVector3 axes[3];
++      joint->computeGlobalAxes(axes);
++      if (anum == 1) {
++        result[0]=axes[1][0];
++        result[1]=axes[1][1];
++        result[2]=axes[1][2];
++      } else if (anum == 0) {
++        // This won't be unit length in general,
++        // but it's what's used in getInfo2
++        // This may be why things freak out as
++        // the body-relative axes get close to each other.
++        dCalcVectorCross3( result, axes[1], axes[2] );
++      } else if (anum == 2) {
++        // Same problem as above.
++        dCalcVectorCross3( result, axes[0], axes[1] );
++      }
++    } else if ( joint->rel[anum] > 0 ) {
+         if ( joint->rel[anum] == 1 )
+         {
+             dMultiply0_331( result, joint->node[0].body->posr.R, joint->axis[anum] );
+@@ -438,16 +449,32 @@
+     dAASSERT( joint && anum >= 0 && anum < 3 );
+     checktype( joint, AMotor );
+     if ( anum < 0 ) anum = 0;
+-    if ( anum > 3 ) anum = 3;
++    if ( anum > 2 ) anum = 2;
++
++    if ( joint->mode == dAMotorEuler )
++    {
++        dVector3 ax[3];
++        joint->computeGlobalAxes( ax );
++        joint->computeEulerAngles( ax );
++    }
++
+     return joint->angle[anum];
+ }
+ 
+ 
+ dReal dJointGetAMotorAngleRate( dJointID j, int anum )
+ {
+-    //dxJointAMotor* joint = (dxJointAMotor*)j;
+-    // @@@
+-    dDebug( 0, "not yet implemented" );
++    dxJointAMotor* joint = ( dxJointAMotor* )j;
++    dAASSERT( joint && anum >= 0 && anum < 3);
++    checktype( joint, AMotor );
++  
++    if (joint->node[0].body) {
++      dVector3 axis;
++      dJointGetAMotorAxis (joint, anum, axis);
++      dReal rate = dDOT(axis,joint->node[0].body->avel);
++      if (joint->node[1].body) rate -= dDOT(axis,joint->node[1].body->avel);
++      return rate;
++    }
+     return 0;
+ }
+ 
+@@ -477,7 +504,7 @@
+ void dJointAddAMotorTorques( dJointID j, dReal torque1, dReal torque2, dReal torque3 )
+ {
+     dxJointAMotor* joint = ( dxJointAMotor* )j;
+-    dVector3 axes[3];
++    dVector3 ax[3];
+     dAASSERT( joint );
+     checktype( joint, AMotor );
+ 
+@@ -485,27 +512,46 @@
+         return;
+     dUASSERT(( joint->flags & dJOINT_REVERSE ) == 0, "dJointAddAMotorTorques not yet implemented for reverse AMotor joints" );
+ 
+-    joint->computeGlobalAxes( axes );
+-    axes[0][0] *= torque1;
+-    axes[0][1] *= torque1;
+-    axes[0][2] *= torque1;
++    joint->computeGlobalAxes( ax );
++    dVector3 *axptr[3];
++    axptr[0] = &ax[0];
++    axptr[1] = &ax[1];
++    axptr[2] = &ax[2];
++
++    dVector3 ax0_cross_ax1;
++    dVector3 ax1_cross_ax2;
++    if ( joint->mode == dAMotorEuler )
++    {
++        dCalcVectorCross3( ax0_cross_ax1, ax[0], ax[1] );
++        axptr[2] = &ax0_cross_ax1;
++        dCalcVectorCross3( ax1_cross_ax2, ax[1], ax[2] );
++        axptr[0] = &ax1_cross_ax2;
++
++        dCopyVector3(ax[0],ax1_cross_ax2);
++        dCopyVector3(ax[2],ax0_cross_ax1);
++    }
++
++
++    ax[0][0] *= torque1;
++    ax[0][1] *= torque1;
++    ax[0][2] *= torque1;
+     if ( joint->num >= 2 )
+     {
+-        axes[0][0] += axes[1][0] * torque2;
+-        axes[0][1] += axes[1][1] * torque2;
+-        axes[0][2] += axes[1][2] * torque2;
++        ax[0][0] += ax[1][0] * torque2;
++        ax[0][1] += ax[1][1] * torque2;
++        ax[0][2] += ax[1][2] * torque2;
+         if ( joint->num >= 3 )
+         {
+-            axes[0][0] += axes[2][0] * torque3;
+-            axes[0][1] += axes[2][1] * torque3;
+-            axes[0][2] += axes[2][2] * torque3;
++            ax[0][0] += ax[2][0] * torque3;
++            ax[0][1] += ax[2][1] * torque3;
++            ax[0][2] += ax[2][2] * torque3;
+         }
+     }
+ 
+     if ( joint->node[0].body != 0 )
+-        dBodyAddTorque( joint->node[0].body, axes[0][0], axes[0][1], axes[0][2] );
++        dBodyAddTorque( joint->node[0].body, ax[0][0], ax[0][1], ax[0][2] );
+     if ( joint->node[1].body != 0 )
+-        dBodyAddTorque( joint->node[1].body, -axes[0][0], -axes[0][1], -axes[0][2] );
++        dBodyAddTorque( joint->node[1].body, -ax[0][0], -ax[0][1], -ax[0][2] );
+ }
+ 
+ 
+Index: ode/src/joints/ball.cpp
+===================================================================
+--- ode/src/joints/ball.cpp	(revision 1939)
++++ ode/src/joints/ball.cpp	(working copy)
+@@ -63,30 +63,59 @@
+     setBall( this, worldFPS, this->erp, info, anchor1, anchor2 );
+ }
+ 
++void dJointSetBallAnchor( dJointID j, dReal x, dReal y, dReal z )
++{
++    dxJointBall* joint = ( dxJointBall* )j;
++    dUASSERT( joint, "bad joint argument" );
++    checktype( joint, Ball );
++    setAnchors( joint, x, y, z, joint->anchor1, joint->anchor2 );
++}
+ 
++// Set the ball-joint anchor for body 1 in world frame
++void dJointSetBallAnchor1( dJointID j, dReal x, dReal y, dReal z )
++{
++    dxJointBall* joint = ( dxJointBall* )j;
++    dUASSERT( joint, "bad joint argument" );
++    checktype( joint, Ball );
+ 
++    setAnchors( joint, x, y, z, joint->anchor1, 0);
++}
+ 
+-
+-void dJointSetBallAnchor( dJointID j, dReal x, dReal y, dReal z )
++// Set the ball-joint anchor for body 1 in local frame
++void dJointSetBallAnchor1Rel( dJointID j, dReal x, dReal y, dReal z )
+ {
+     dxJointBall* joint = ( dxJointBall* )j;
+     dUASSERT( joint, "bad joint argument" );
+     checktype( joint, Ball );
+-    setAnchors( joint, x, y, z, joint->anchor1, joint->anchor2 );
++    joint->anchor1[0] = x;
++    joint->anchor1[1] = y;
++    joint->anchor1[2] = z;
++    joint->anchor1[3] = 0;
+ }
+ 
+-
++// Set the anchor for body 2 in world frame
+ void dJointSetBallAnchor2( dJointID j, dReal x, dReal y, dReal z )
+ {
+     dxJointBall* joint = ( dxJointBall* )j;
+     dUASSERT( joint, "bad joint argument" );
+     checktype( joint, Ball );
++
++    setAnchors( joint, x, y, z, 0, joint->anchor2 );
++}
++
++// Set the anchor for body 2 in local (body 2) frame.
++void dJointSetBallAnchor2Rel( dJointID j, dReal x, dReal y, dReal z )
++{
++    dxJointBall* joint = ( dxJointBall* )j;
++    dUASSERT( joint, "bad joint argument" );
++    checktype( joint, Ball );
+     joint->anchor2[0] = x;
+     joint->anchor2[1] = y;
+     joint->anchor2[2] = z;
+     joint->anchor2[3] = 0;
+ }
+ 
++
+ void dJointGetBallAnchor( dJointID j, dVector3 result )
+ {
+     dxJointBall* joint = ( dxJointBall* )j;
+Index: ode/src/joints/contact.cpp
+===================================================================
+--- ode/src/joints/contact.cpp	(revision 1939)
++++ ode/src/joints/contact.cpp	(working copy)
+@@ -40,7 +40,8 @@
+ void 
+ dxJointContact::getSureMaxInfo( SureMaxInfo* info )
+ {
+-    info->max_m = 3; // ...as the actual m is very likely to hit the maximum
++  // ...as the actual m is very likely to hit the maximum
++  info->max_m = (contact.surface.mode&dContactRolling)?6:3; 
+ }
+ 
+ 
+@@ -50,21 +51,48 @@
+     // make sure mu's >= 0, then calculate number of constraint rows and number
+     // of unbounded rows.
+     int m = 1, nub = 0;
++    int roll = (contact.surface.mode&dContactRolling)!=0;
++    
+     if ( contact.surface.mu < 0 ) contact.surface.mu = 0;
+-    if ( contact.surface.mode & dContactMu2 )
++    /*if (contact.surface.rho>0 && roll) {
++      m+=3;
++      if (contact.surface.rho == dInfinity ) nub+=3;
++    }*/
++
++    // Anisotropic sliding and rolling and spinning friction 
++    if ( contact.surface.mode & dContactAxisDep )
+     {
+         if ( contact.surface.mu2 < 0 ) contact.surface.mu2 = 0;
+         if ( contact.surface.mu  > 0 ) m++;
+         if ( contact.surface.mu2 > 0 ) m++;
+         if ( contact.surface.mu  == dInfinity ) nub ++;
+         if ( contact.surface.mu2 == dInfinity ) nub ++;
++        if (roll) {
++          if ( contact.surface.rho < 0 ) contact.surface.rho = 0;
++          else m++;
++          if ( contact.surface.rho2 < 0 ) contact.surface.rho2 = 0;
++          else m++;
++          if ( contact.surface.rhoN < 0 ) contact.surface.rhoN = 0;
++          else m++;
++
++          if ( contact.surface.rho  == dInfinity ) nub++;
++          if ( contact.surface.rho2 == dInfinity ) nub++;
++          if ( contact.surface.rhoN == dInfinity ) nub++;
++        }
+     }
+     else
+     {
+         if ( contact.surface.mu > 0 ) m += 2;
+         if ( contact.surface.mu == dInfinity ) nub += 2;
++        if (roll) {
++          if ( contact.surface.rho < 0 ) contact.surface.rho = 0;
++          else m+=3;
++          if ( contact.surface.rhoN == dInfinity ) nub += 3;
++        }
+     }
+ 
++
++
+     the_m = m;
+     info->m = m;
+     info->nub = nub;
+@@ -76,9 +104,11 @@
+ {
+     int s = info->rowskip;
+     int s2 = 2 * s;
++
+     const int rowNormal = 0;
+     const int rowFriction1 = 1;
+     int rowFriction2 = 2; // we might decrease it to 1, so no const
++    int rollRow=3;
+ 
+     // get normal, with sign adjusted for body1/body2 polarity
+     dVector3 normal;
+@@ -192,7 +222,6 @@
+     }
+ 
+     // first friction direction
+-
+     if ( contact.surface.mu > 0 )
+     {
+         info->J1l[s+0] = t1[0];
+@@ -269,6 +298,43 @@
+         // set slip (constraint force mixing)
+         if ( contact.surface.mode & dContactSlip2 )
+             info->cfm[rowFriction2] = contact.surface.slip2;
++        rollRow = rowFriction2+1;
++    } else {
++      rollRow = rowFriction2;
++    } 
++
++    if (contact.surface.mode&dContactRolling) {
++        dReal rho[3];
++        const dReal* ax[3];
++        int approx[3];
++  
++        rho[0] = contact.surface.rho;
++        if (contact.surface.mode&dContactAxisDep) {
++            rho[1] = contact.surface.rho2;
++            rho[2] = contact.surface.rhoN;
++        } else {
++            rho[1] = rho[0];
++            rho[2] = rho[0];
++        }
++        ax[0] = t2;
++        ax[1] = t1;
++        ax[2] = normal;
++        approx[0] = contact.surface.mode & dContactApprox1_1;
++        approx[1] = contact.surface.mode & dContactApprox1_2;
++        approx[2] = contact.surface.mode & dContactApprox1_N;
++
++        for (int ii=0;ii<3;++ii) {
++            if (rho[ii]>0) {
++              dCopyVector3(&(info->J1a[ rollRow*s ]),ax[ii]);
++              if ( node[1].body ) {
++                dCopyNegatedVector3(&(info->J2a[ rollRow*s ]),ax[ii]);
++              }
++              info->lo[ rollRow ] = -rho[ii];
++              info->hi[ rollRow ] =  rho[ii];
++              if (approx[ii]) info->findex[ rollRow ] = 0;
++              rollRow++;
++            }
++        }
+     }
+ }
+ 
+Index: ode/src/joints/hinge.cpp
+===================================================================
+--- ode/src/joints/hinge.cpp	(revision 1939)
++++ ode/src/joints/hinge.cpp	(working copy)
+@@ -159,7 +159,49 @@
+     joint->computeInitialRelativeRotation();
+ }
+ 
++void dJointSetHingeAnchor1( dJointID j, dReal x, dReal y, dReal z )
++{
++    dxJointHinge* joint = ( dxJointHinge* )j;
++    dUASSERT( joint, "bad joint argument" );
++    checktype( joint, Hinge );
+ 
++    setAnchors( joint, x, y, z, joint->anchor1, 0);
++    
++}
++
++void dJointSetHingeAnchor1Rel( dJointID j, dReal x, dReal y, dReal z )
++{
++    dxJointHinge* joint = ( dxJointHinge* )j;
++    dUASSERT( joint, "bad joint argument" );
++    checktype( joint, Hinge );
++    joint->anchor1[0] = x;
++    joint->anchor1[1] = y;
++    joint->anchor1[2] = z;
++    joint->anchor1[3] = 0;
++}
++
++void dJointSetHingeAnchor2( dJointID j, dReal x, dReal y, dReal z )
++{
++    dxJointHinge* joint = ( dxJointHinge* )j;
++    dUASSERT( joint, "bad joint argument" );
++    checktype( joint, Hinge );
++
++    setAnchors( joint, x, y, z, 0, joint->anchor2 );
++}
++
++void dJointSetHingeAnchor2Rel( dJointID j, dReal x, dReal y, dReal z )
++{
++    dxJointHinge* joint = ( dxJointHinge* )j;
++    dUASSERT( joint, "bad joint argument" );
++    checktype( joint, Hinge );
++    joint->anchor2[0] = x;
++    joint->anchor2[1] = y;
++    joint->anchor2[2] = z;
++    joint->anchor2[3] = 0;
++}
++
++
++
+ void dJointSetHingeAnchorDelta( dJointID j, dReal x, dReal y, dReal z, dReal dx, dReal dy, dReal dz )
+ {
+     dxJointHinge* joint = ( dxJointHinge* )j;
+Index: ode/src/joints/joints.h
+===================================================================
+--- ode/src/joints/joints.h	(revision 1939)
++++ ode/src/joints/joints.h	(working copy)
+@@ -27,6 +27,13 @@
+ 
+ #include "joint.h"
+ 
++/* To add a new joint to the library you must
++ * (1) add the header file here.
++ * (2) add a dJointType enum entry in 'common.h'
++ * (3) add a dJointCreate'X' Constructor in 'ode.cpp'
++ * (4) add the public API declaration (including constructor)
++ *     to 'objects.h'
++ */ 
+ #include "ball.h"
+ #include "dball.h"
+ #include "dhinge.h"
+Index: ode/src/joints/lmotor.cpp
+===================================================================
+--- ode/src/joints/lmotor.cpp	(revision 1939)
++++ ode/src/joints/lmotor.cpp	(working copy)
+@@ -195,6 +195,40 @@
+     return joint->limot[anum].get( parameter );
+ }
+ 
++void dJointAddLMotorForces( dJointID j, dReal force1, dReal force2, dReal force3 )
++{
++    dxJointLMotor* joint = ( dxJointLMotor* )j;
++    dVector3 axes[3];
++    dAASSERT( joint );
++    checktype( joint, LMotor );
++
++    if ( joint->num == 0 )
++        return;
++    dUASSERT(( joint->flags & dJOINT_REVERSE ) == 0, "dJointAddLMotorForces not yet implemented for reverse LMotor joints" );
++
++    joint->computeGlobalAxes( axes );
++    axes[0][0] *= force1;
++    axes[0][1] *= force1;
++    axes[0][2] *= force1;
++    if ( joint->num >= 2 )
++    {
++        axes[0][0] += axes[1][0] * force2;
++        axes[0][1] += axes[1][1] * force2;
++        axes[0][2] += axes[1][2] * force2;
++        if ( joint->num >= 3 )
++        {
++            axes[0][0] += axes[2][0] * force3;
++            axes[0][1] += axes[2][1] * force3;
++            axes[0][2] += axes[2][2] * force3;
++        }
++    }
++
++    if ( joint->node[0].body != 0 )
++        dBodyAddForce( joint->node[0].body, axes[0][0], axes[0][1], axes[0][2] );
++    if ( joint->node[1].body != 0 )
++        dBodyAddForce( joint->node[1].body, -axes[0][0], -axes[0][1], -axes[0][2] );
++}
++
+ dJointType
+ dxJointLMotor::type() const
+ {
+Index: ode/src/joints/universal.cpp
+===================================================================
+--- ode/src/joints/universal.cpp	(revision 1939)
++++ ode/src/joints/universal.cpp	(working copy)
+@@ -403,7 +403,64 @@
+     joint->computeInitialRelativeRotations();
+ }
+ 
++void dJointSetUniversalAnchor1( dJointID j, dReal x, dReal y, dReal z )
++{
++    dxJointUniversal* joint = ( dxJointUniversal* )j;
++    dUASSERT( joint, "bad joint argument" );
++    checktype( joint, Universal );
+ 
++    setAnchors( joint, x, y, z, joint->anchor1, 0);
++}
++
++void dJointSetUniversalAnchor1Rel( dJointID j, dReal x, dReal y, dReal z )
++{
++    dxJointUniversal* joint = ( dxJointUniversal* )j;
++    dUASSERT( joint, "bad joint argument" );
++    checktype( joint, Universal );
++    joint->anchor1[0] = x;
++    joint->anchor1[1] = y;
++    joint->anchor1[2] = z;
++    joint->anchor1[3] = 0;
++}
++
++void dJointSetUniversalAnchor2( dJointID j, dReal x, dReal y, dReal z )
++{
++    dxJointUniversal* joint = ( dxJointUniversal* )j;
++    dUASSERT( joint, "bad joint argument" );
++    checktype( joint, Universal );
++
++    setAnchors( joint, x, y, z, 0, joint->anchor2 );
++}
++
++void dJointSetUniversalAnchor2Rel( dJointID j, dReal x, dReal y, dReal z )
++{
++    dxJointUniversal* joint = ( dxJointUniversal* )j;
++    dUASSERT( joint, "bad joint argument" );
++    checktype( joint, Universal );
++    joint->anchor2[0] = x;
++    joint->anchor2[1] = y;
++    joint->anchor2[2] = z;
++    joint->anchor2[3] = 0;
++}
++
++
++void dJointSetUniversalAxes (dJointID j, 
++                             dReal x1, dReal y1, dReal z1,
++                             dReal x2, dReal y2, dReal z2)
++{
++    dxJointUniversal* joint = ( dxJointUniversal* )j;
++    dUASSERT( joint, "bad joint argument" );
++    checktype( joint, Universal );
++    if ( joint->flags & dJOINT_REVERSE ) {
++        setAxes( joint, x2, y2, z2, joint->axis1, NULL );
++        setAxes( joint, x1, y1, z1, NULL, joint->axis2 );
++    } else {
++        setAxes( joint, x1, y1, z1, joint->axis1, NULL );
++        setAxes( joint, x2, y2, z2, NULL, joint->axis2 );
++    }
++    joint->computeInitialRelativeRotations();
++}
++
+ void dJointSetUniversalAxis1( dJointID j, dReal x, dReal y, dReal z )
+ {
+     dxJointUniversal* joint = ( dxJointUniversal* )j;
+Index: ode/src/ode.cpp
+===================================================================
+--- ode/src/ode.cpp	(revision 1939)
++++ ode/src/ode.cpp	(working copy)
+@@ -470,6 +470,14 @@
+     dAASSERT (b);
+     return b->lvel;
+ }
++void dBodyCopyLinearVel (dBodyID b,dVector3 res)
++{
++    dAASSERT (b);
++    res[0]=b->lvel[0];
++    res[1]=b->lvel[1];
++    res[2]=b->lvel[2];
++  
++}
+ 
+ 
+ const dReal * dBodyGetAngularVel (dBodyID b)
+@@ -477,6 +485,13 @@
+     dAASSERT (b);
+     return b->avel;
+ }
++void dBodyCopyAngularVel (dBodyID b,dVector3 res)
++{
++    dAASSERT (b);
++    res[0]=b->avel[0];
++    res[1]=b->avel[1];
++    res[2]=b->avel[2];
++}
+ 
+ 
+ void dBodySetMass (dBodyID b, const dMass *mass)
+Index: ode/src/odemath.cpp
+===================================================================
+--- ode/src/odemath.cpp	(revision 1939)
++++ ode/src/odemath.cpp	(working copy)
+@@ -177,7 +177,28 @@
+     }
+ }
+ 
++int dDirectedPlaneSpace (const dVector3 n, const dVector3 d, dVector3 p, dVector3 q)
++{
++    // Find the projection of d onto n (n assumed to be unit length)
++    dReal dotp = dCalcVectorDot3(n,d);
++    // Remove that projection from d and store the result in p
++    dAddScaledVectors3(p,d,n,1,-dotp);
+ 
++    if (p[0]==0 && p[1]==0 && p[2]==0) {
++        // If p==0, then compute a regular planeSpace
++        dPlaneSpace(n,p,q);
++        return 0;
++    } else {
++        // Otherwise, normalize p and cross with n for q
++        dNormalize3(p);
++        // If n and p are unit length, so should be q.
++        dCalcVectorCross3(q,n,p);
++        return 1;
++    }
++}
++
++
++
+ /*
+ * This takes what is supposed to be a rotation matrix,
+ * and make sure it is correct.
+Index: ode/src/odemath.h
+===================================================================
+--- ode/src/odemath.h	(revision 1939)
++++ ode/src/odemath.h	(working copy)
+@@ -27,6 +27,17 @@
+ #include "error.h"
+ 
+ 
++#if 1
++/* The "dReal to float" conversion warnings are annoying. 
++   This gets rid of them.  We put it here because all of
++   the relevant collision cpp files include it.
++
++*/
++#define OPC_FLOATCAST (float)
++#else
++#define OPC_FLOATCAST 
++#endif
++
+ int  _dSafeNormalize3 (dVector3 a);
+ int  _dSafeNormalize4 (dVector4 a);
+ 
+Index: ode/src/rotation.cpp
+===================================================================
+--- ode/src/rotation.cpp	(revision 1939)
++++ ode/src/rotation.cpp	(working copy)
+@@ -227,12 +227,44 @@
+     qa[3] = -qb[0]*qc[3] - qb[3]*qc[0] + qb[1]*qc[2] - qb[2]*qc[1];
+ }
+ 
++/* res = q*v*q' */
++void dQMultVec0 (dVector3 res, const dQuaternion q, const dVector3 v)
++{
++  dAASSERT (res && q && v);
+ 
++  dQuaternion tmp;
++  tmp[0] = v[0]*q[1] + v[1]*q[2] + v[2]*q[3];
++  tmp[1] = v[0]*q[0] - v[1]*q[3] + v[2]*q[2];
++  tmp[2] = v[1]*q[0] - v[2]*q[1] + v[0]*q[3];
++  tmp[3] = v[2]*q[0] - v[0]*q[2] + v[1]*q[1];
++
++  res[0] = q[0]*tmp[1] + q[1]*tmp[0] + q[2]*tmp[3] - q[3]*tmp[2];
++  res[1] = q[0]*tmp[2] + q[2]*tmp[0] + q[3]*tmp[1] - q[1]*tmp[3];
++  res[2] = q[0]*tmp[3] + q[3]*tmp[0] + q[1]*tmp[2] - q[2]*tmp[1];
++}
++
++/* res = q'*v*q */
++void dQMultVec1 (dVector3 res, const dQuaternion q, const dVector3 v)
++{
++  dAASSERT (res && q && v);
++
++  dQuaternion tmp;
++  tmp[0] =  - v[0]*q[1] - v[1]*q[2] - v[2]*q[3];
++  tmp[1] =    v[0]*q[0] + v[1]*q[3] - v[2]*q[2];
++  tmp[2] =    v[1]*q[0] + v[2]*q[1] - v[0]*q[3];
++  tmp[3] =    v[2]*q[0] + v[0]*q[2] - v[1]*q[1];
++  
++  res[0] = -q[0]*tmp[1] + q[1]*tmp[0] - q[2]*tmp[3] + q[3]*tmp[2];
++  res[1] = -q[0]*tmp[2] + q[2]*tmp[0] - q[3]*tmp[1] + q[1]*tmp[3];
++  res[2] = -q[0]*tmp[3] + q[3]*tmp[0] - q[1]*tmp[2] + q[2]*tmp[1];
++}
++
++
++
+ // dRfromQ(), dQfromR() and dDQfromW() are derived from equations in "An Introduction
+ // to Physically Based Modeling: Rigid Body Simulation - 1: Unconstrained
+ // Rigid Body Dynamics" by David Baraff, Robotics Institute, Carnegie Mellon
+ // University, 1997.
+-
+ void dRfromQ (dMatrix3 R, const dQuaternion q)
+ {
+     dAASSERT (q && R);
+Index: ode/src/step.cpp
+===================================================================
+--- ode/src/step.cpp	(revision 1939)
++++ ode/src/step.cpp	(working copy)
+@@ -467,7 +467,9 @@
+                 dMultiply2_333 (tmp,b->invI,b->posr.R);
+                 dMultiply0_333 (invIrow,b->posr.R,tmp);
+ 
+-                if ((b->flags & dxBodyGyroscopic) != 0) {
++                // Don't apply gyroscopic torques to bodies
++                // if not flagged or the body is kinematic
++                if ((b->flags & dxBodyGyroscopic)&& (b->invMass>0)) {
+                     dMatrix3 I;
+                     // compute inertia tensor in global frame
+                     dMultiply2_333 (tmp,b->mass.I,b->posr.R);
+@@ -1226,6 +1228,12 @@
+                     // in the feedback structure.
+                     dReal data[8];
+                     Multiply1_8q1 (data, JJ, lambdarow, infom);
++                    for (unsigned int ii=0;ii<infom;++ii) {
++                      fb->gf[ii] = lambdarow[ii];
++                    }
++                    for (unsigned int ii=infom;ii<8;++ii) {
++                      fb->gf[ii] = 0;
++                    }
+ 
+                     dxBody* b1 = joint->node[0].body;
+                     dReal *cf1 = cforce + 8*(size_t)(unsigned)b1->tag;

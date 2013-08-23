@@ -1,0 +1,309 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>SequenceForm</class>
+ <widget class="QWidget" name="SequenceForm">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>436</width>
+    <height>242</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Form</string>
+  </property>
+  <layout class="QHBoxLayout" name="horizontalLayout">
+   <item>
+    <widget class="QTreeWidget" name="seqTreeWidget">
+     <property name="rootIsDecorated">
+      <bool>false</bool>
+     </property>
+     <property name="animated">
+      <bool>true</bool>
+     </property>
+     <property name="columnCount">
+      <number>4</number>
+     </property>
+     <attribute name="headerDefaultSectionSize">
+      <number>65</number>
+     </attribute>
+     <column>
+      <property name="text">
+       <string>Sequence</string>
+      </property>
+     </column>
+     <column>
+      <property name="text">
+       <string>Record</string>
+      </property>
+     </column>
+     <column>
+      <property name="text">
+       <string>Range</string>
+      </property>
+     </column>
+     <column>
+      <property name="text">
+       <string>Type</string>
+      </property>
+     </column>
+     <item>
+      <property name="text">
+       <string>Constant</string>
+      </property>
+      <property name="text">
+       <string/>
+      </property>
+      <property name="text">
+       <string/>
+      </property>
+      <property name="text">
+       <string/>
+      </property>
+     </item>
+    </widget>
+   </item>
+   <item>
+    <layout class="QVBoxLayout" name="verticalLayout">
+     <property name="spacing">
+      <number>0</number>
+     </property>
+     <item>
+      <widget class="QPushButton" name="newSeqButton">
+       <property name="text">
+        <string>New Sequence</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="loadSeqButton">
+       <property name="text">
+        <string>Load Sequence</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="saveSeqButton">
+       <property name="text">
+        <string>Save Sequence</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="closeSeqButton">
+       <property name="text">
+        <string>Close Sequence</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <spacer name="verticalSpacer">
+       <property name="orientation">
+        <enum>Qt::Vertical</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>20</width>
+         <height>40</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item>
+      <widget class="QPushButton" name="newViewButton">
+       <property name="text">
+        <string>New View</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="removeViewButton">
+       <property name="text">
+        <string>Remove View</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <spacer name="verticalSpacer_2">
+       <property name="orientation">
+        <enum>Qt::Vertical</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>20</width>
+         <height>40</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item>
+      <widget class="QPushButton" name="newPlotButton">
+       <property name="text">
+        <string>New Plot</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections>
+  <connection>
+   <sender>newSeqButton</sender>
+   <signal>clicked()</signal>
+   <receiver>SequenceForm</receiver>
+   <slot>newSequenceSlot()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>408</x>
+     <y>21</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>431</x>
+     <y>22</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>loadSeqButton</sender>
+   <signal>clicked()</signal>
+   <receiver>SequenceForm</receiver>
+   <slot>loadSequenceSlot()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>410</x>
+     <y>45</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>434</x>
+     <y>47</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>saveSeqButton</sender>
+   <signal>clicked()</signal>
+   <receiver>SequenceForm</receiver>
+   <slot>saveSequenceSlot()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>381</x>
+     <y>68</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>430</x>
+     <y>72</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>closeSeqButton</sender>
+   <signal>clicked()</signal>
+   <receiver>SequenceForm</receiver>
+   <slot>closeSequenceSlot()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>377</x>
+     <y>91</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>432</x>
+     <y>98</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>newViewButton</sender>
+   <signal>clicked()</signal>
+   <receiver>SequenceForm</receiver>
+   <slot>newViewSlot()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>411</x>
+     <y>142</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>433</x>
+     <y>143</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>removeViewButton</sender>
+   <signal>clicked()</signal>
+   <receiver>SequenceForm</receiver>
+   <slot>removeViewSlot()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>403</x>
+     <y>166</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>433</x>
+     <y>169</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>newPlotButton</sender>
+   <signal>clicked()</signal>
+   <receiver>SequenceForm</receiver>
+   <slot>newPlotSlot()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>413</x>
+     <y>221</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>432</x>
+     <y>222</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>seqTreeWidget</sender>
+   <signal>itemSelectionChanged()</signal>
+   <receiver>SequenceForm</receiver>
+   <slot>selectionChangedSlot()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>329</x>
+     <y>116</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>338</x>
+     <y>116</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>seqTreeWidget</sender>
+   <signal>itemChanged(QTreeWidgetItem*,int)</signal>
+   <receiver>SequenceForm</receiver>
+   <slot>changeSlot(QTreeWidgetItem*,int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>322</x>
+     <y>199</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>339</x>
+     <y>198</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+ <slots>
+  <slot>newSequenceSlot()</slot>
+  <slot>loadSequenceSlot()</slot>
+  <slot>saveSequenceSlot()</slot>
+  <slot>closeSequenceSlot()</slot>
+  <slot>newViewSlot()</slot>
+  <slot>removeViewSlot()</slot>
+  <slot>newPlotSlot()</slot>
+  <slot>selectionChangedSlot()</slot>
+  <slot>changeSlot(QTreeWidgetItem*,int)</slot>
+ </slots>
+</ui>
