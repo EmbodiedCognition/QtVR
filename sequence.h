@@ -102,9 +102,9 @@ public:
     ~Sequence();
 
   int size();
-  double value(int tt,int rr,int cc);
-  QPainterPath* getPath(int rr,int cc);
-  void fillPath(QPainterPath* path,int t0,int t1,int rr,int cc);
+  double value(int data_type,int row_index,int column_index);
+  QPainterPath* getPath(int row_index,int column_index);
+  void fillPath(QPainterPath* path,int t0,int t1,int row_index,int column_index);
 
   void createPaths(DataFrame* frame);
   void updatePaths(DataFrame* frame);
@@ -120,8 +120,8 @@ public slots:
 protected:
   QList<DataFrame*> data;
   QPainterPath* paths;
-  int rsize;
-  int csize;
+  int row_count;
+  int column_count;
 
 };
 

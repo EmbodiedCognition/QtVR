@@ -547,7 +547,7 @@ void MainWindow::grabMarkPos(int mark)
   const dReal* markPos = dBodyGetPosition(md->body[mark]);
 
   dVector3 pos;
-  dBodyGetPosRelPoint(body->bodies[body->markerToBody[mark].id],
+  dBodyGetPosRelPoint(body->body_segments[body->marker_to_body[mark].id],
                       markPos[0],markPos[1],markPos[2],pos);
 
   //body->markerToBody[mark].pos[0]=pos[0];
@@ -655,8 +655,8 @@ void MainWindow::restoreModel()
 void MainWindow::clearData()
 {
   SimWorld* w = getWorld();
-  w->angleSequence->clear();
-  w->torqueSequence->clear();
+  w->angle_sequence->clear();
+  w->torque_sequence->clear();
 }
 
 void MainWindow::strongForces()
@@ -715,5 +715,5 @@ void MainWindow::writeAngleFrame(int cc,int tri,FILE* file)
 
 void MainWindow::useGlobalForces(bool use)
 {
-  getWorld()->getBody()->globalForces = use;
+  getWorld()->getBody()->global_forces = use;
 }

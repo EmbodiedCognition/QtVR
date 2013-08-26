@@ -41,9 +41,9 @@ class DSBoxWithParams;
 struct BodyLink
 {
   int id; ///< Which body part does the marker link to?
-  dVector3 pos; ///< Where (in body-relative coords) does the marker connect.
+  dVector3 position; ///< Where (in body-relative coords) does the marker connect.
 
-  BodyLink() {id = -1; pos[0]=0;pos[1]=0;pos[2]=0; }
+  BodyLink() {id = -1; position[0]=0;position[1]=0;position[2]=0; }
 };
 
 /**
@@ -51,10 +51,10 @@ struct BodyLink
   */
 struct BodyState
 {
-  dVector3 pos;  ///< Position
-  dQuaternion q; ///< Orientation
-  dVector3 lvel; ///< Linear velocity
-  dVector3 avel; ///< Angular velocity
+  dVector3 position;  ///< Position
+  dQuaternion orientation_quaternion; ///< Orientation
+  dVector3 linear_velocity; ///< Linear velocity
+  dVector3 angular_velocity; ///< Angular velocity
 };
 
 /**
@@ -63,14 +63,14 @@ struct BodyState
 struct PartInfo
 {
   int classtype; ///< Sphere, caps, or box
-  dVector3 dim;  ///< radius, length, or x,y,z
-  DSBoxWithParams* spinBox[3]; ///< Widgets for setting body dimensions
+  dVector3 dimensions;  ///< radius, length, or x,y,z
+  DSBoxWithParams* spin_box[3]; ///< Widgets for setting body dimensions
   dQuaternion qq; ///< Orientation in default pose
   QList<BodyLink> links; ///< Links that need anchoring
 
   PartInfo() {classtype=-1;
-              dim[0]=0;dim[1]=0;dim[2]=0;
-              spinBox[0]=0;spinBox[1]=0;spinBox[2]=0;
+              dimensions[0]=0;dimensions[1]=0;dimensions[2]=0;
+              spin_box[0]=0;spin_box[1]=0;spin_box[2]=0;
               qq[0]=1;qq[1]=0;qq[2]=0;qq[3]=0; }
 };
 
@@ -186,10 +186,10 @@ public:
   /// 'Long-term' storage of model state
   BodyState saved[BODY_COUNT];
   /// 'Short-term' (per frame) storage of model state
-  BodyState tempState[BODY_COUNT];
+  BodyState temp_state[BODY_COUNT];
 
-  dBodyID bodies[BODY_COUNT];   ///< Body parts
-  dGeomID geoms[GEOM_COUNT];    ///< Collision geometry
+  dBodyID body_segments[BODY_COUNT];   ///< Body parts
+  dGeomID geometries[GEOM_COUNT];    ///< Collision geometry
   dJointID joints[JOINT_COUNT]; ///< Joints
   dJointID limits[JOINT_COUNT]; ///< Joint limits for 3dof joints
   dJointID motors[JOINT_COUNT]; ///< Joint motors for all joints
@@ -207,28 +207,28 @@ public:
   static dReal density; ///< Density of body parts
 
 
-  double jointTarget[JOINT_COUNT][3]; ///< Target angle for each joint
-  double jointOffset[JOINT_COUNT][3]; ///< Offset applied to the target (from the GUI)
-  double controlLimit[JOINT_COUNT][3]; ///< Max force a joint motor can apply to pursue the target
+  double joint_target[JOINT_COUNT][3]; ///< Target angle for each joint
+  double joint_offset[JOINT_COUNT][3]; ///< Offset applied to the target (from the GUI)
+  double control_limit[JOINT_COUNT][3]; ///< Max force a joint motor can apply to pursue the target
 
-  BodyLink markerToBody[MARKER_COUNT]; ///< Relationship between markers and bodies.
-  PartInfo partInfo[BODY_COUNT];
-  JointInfo jointInfo[JOINT_COUNT];
+  BodyLink marker_to_body[MARKER_COUNT]; ///< Relationship between markers and bodies.
+  PartInfo part_info[BODY_COUNT];
+  JointInfo joint_info[JOINT_COUNT];
   double stepsize; ///< Delta time for each step of dynamics (passed in from SimWorld)
 
-  bool globalForces; ///< Should we compute/apply forces in body local or global coordinates
+  bool global_forces; ///< Should we compute/apply forces in body local or global coordinates
 
   /*
     These data are computed only for display purposes at
     the moment.  However, they could be used as part of
     a control strategy eventually.
     */
-  dVector3 com;  ///< Model's center of mass
-  dVector3 cLin; ///< Model's aggregate linear velocity
-  dVector3 cAng; ///< Model's aggregate angular velocity
+  dVector3 center_of_mass;  ///< Model's center of mass
+  dVector3 senter_lin_vel; ///< Model's aggregate linear velocity
+  dVector3 center_ang_vel; ///< Model's aggregate angular velocity
 
   /// When body dimensions are changed, what should be do with the anchors?
-  bool keepRelAnchors;
+  bool keep_rel_anchors;
 
 public:
 

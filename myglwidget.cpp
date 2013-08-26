@@ -33,18 +33,18 @@
 #include "CapBody.h"
 #include "boarddata.h"
 
-float MyGLWidget::lightPos[4] = {3, 2, 8, 1};
-float MyGLWidget::lightAmb[4] = {.3f,.3f,.3f,1};
-float MyGLWidget::lightDif[4] = {1.0f,1.0f,1.0f,1};
-float MyGLWidget::lightSpc[4] = {.8f,.8f,.8f,1};
-float MyGLWidget::lightZro[4] = {0};
+float MyGLWidget::light_pos[4] = {3, 2, 8, 1};
+float MyGLWidget::light_ambient[4] = {.3f,.3f,.3f,1};
+float MyGLWidget::light_diffuse[4] = {1.0f,1.0f,1.0f,1};
+float MyGLWidget::light_spectral[4] = {.8f,.8f,.8f,1};
+float MyGLWidget::light_zro[4] = {0};
 
 MyGLWidget::MyGLWidget(QWidget *parent) :
     QGLWidget(parent)
 {
   fovy     = 40;
-  nearClip = .25;
-  farClip  = 50;
+  near_clip = .25;
+  far_clip  = 50;
   angle = 0;
 
   //animationTimer.setSingleShot(false);
@@ -53,36 +53,36 @@ MyGLWidget::MyGLWidget(QWidget *parent) :
 
   camera.translateRelative(QVector3D(0,0,10));
 
-  simWorld = new SimWorld(this);
-
+  sim_world = new SimWorld(this);
+  std::cout << "SimWorld object created" << std::endl;
   setFocusPolicy(Qt::StrongFocus);
   initializeGraphicsScene();
-  drawLines=false;
-  followCamera=false;
-  showMarkers=true;
+  draw_lines=false;
+  follow_camera=false;
+  show_markers=true;
 
 #if defined( BOARD_DATA )
   bd=NULL;
 #endif
 
-  bodyAlpha = 0.5;
+  body_alpha = 0.5;
 }
 
 void MyGLWidget::setDrawLines(bool should)
 {
-  drawLines=should;
+  draw_lines=should;
 }
 
 void MyGLWidget::setShowMarkers(bool should)
 {
-  showMarkers=should;
+  show_markers=should;
 }
 
 void MyGLWidget::setFollowCamera(bool should)
 {
-  followCamera=should;
+  follow_camera=should;
   if (should) {
-    dBodyID waist = simWorld->getBody()->bodies[CapBody::WAIST_BODY];
+    dBodyID waist = sim_world->getBody()->body_segments[CapBody::WAIST_BODY];
     const dReal* pos = dBodyGetPosition(waist);
     QVector3D oldPos = camera.getPosition();
     offset.setX(oldPos.x()-pos[0]);
@@ -95,7 +95,7 @@ void MyGLWidget::setBodyAlpha(double alpha)
   if (alpha<0) alpha = 0;
   if (alpha>1) alpha = 1;
 
-  bodyAlpha = alpha;
+  body_alpha = alpha;
 }
 
 //void MyGLWidget::setAnimationRate(double rate)
@@ -121,9 +121,9 @@ void MyGLWidget::initializeGL()
 
 
 
-  glLightfv(GL_LIGHT0, GL_AMBIENT, lightAmb);		// Set Ambient light
-  glLightfv(GL_LIGHT0, GL_DIFFUSE, lightDif);		// Set Diffuse
-  glLightfv(GL_LIGHT0, GL_SPECULAR, lightSpc);		// Set Specular
+  glLightfv(GL_LIGHT0, GL_AMBIENT, light_ambient);		// Set Ambient light
+  glLightfv(GL_LIGHT0, GL_DIFFUSE, light_diffuse);		// Set Diffuse
+  glLightfv(GL_LIGHT0, GL_SPECULAR, light_spectral);		// Set Specular
 
   //glEnable(GL_POLYGON_SMOOTH);                          // Anti-alias polygons
   glHint(GL_POLYGON_SMOOTH_HINT,GL_NICEST);
@@ -131,11 +131,11 @@ void MyGLWidget::initializeGL()
 
 
   QImage img(QString("data/seamlessNoise.png"));
-  noiseTex = bindTexture(img,GL_TEXTURE_2D,GL_RGB,QGLContext::DefaultBindOption);
-  racquetTex = bindTexture(QImage(QString("data/racquetTex.png")),GL_TEXTURE_2D,GL_RGBA,QGLContext::DefaultBindOption);
-  woodTex = bindTexture(QImage(QString("data/wood.bmp")),GL_TEXTURE_2D,GL_RGB,QGLContext::DefaultBindOption);
-  cementTex = bindTexture(QImage(QString("data/concrete.bmp")),GL_TEXTURE_2D,GL_RGB,QGLContext::DefaultBindOption);
-  ceilingTex = bindTexture(QImage(QString("data/ceiling.bmp")),GL_TEXTURE_2D,GL_RGB,QGLContext::DefaultBindOption);
+  noise_texture = bindTexture(img,GL_TEXTURE_2D,GL_RGB,QGLContext::DefaultBindOption);
+  racquet_texture = bindTexture(QImage(QString("data/racquetTex.png")),GL_TEXTURE_2D,GL_RGBA,QGLContext::DefaultBindOption);
+  wood_texture = bindTexture(QImage(QString("data/wood.bmp")),GL_TEXTURE_2D,GL_RGB,QGLContext::DefaultBindOption);
+  cement_texture = bindTexture(QImage(QString("data/concrete.bmp")),GL_TEXTURE_2D,GL_RGB,QGLContext::DefaultBindOption);
+  ceiling_texture = bindTexture(QImage(QString("data/ceiling.bmp")),GL_TEXTURE_2D,GL_RGB,QGLContext::DefaultBindOption);
 
   glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_S,GL_REPEAT);
   glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_T,GL_REPEAT);
@@ -153,8 +153,8 @@ void MyGLWidget::initializeGL()
 
   quadric = gluNewQuadric();
 
-  frontList = glGenLists(1);
-  shadowList = glGenLists(1);
+  front_list = glGenLists(1);
+  shadow_list = glGenLists(1);
 }
 
 void MyGLWidget::paintGL()
@@ -184,7 +184,7 @@ void MyGLWidget::paintGL()
 
 void MyGLWidget::animate()
 {
-  simWorld->step();
+  sim_world->step();
 
 #if defined( BOARD_DATA )
   bd->step();
@@ -192,14 +192,14 @@ void MyGLWidget::animate()
 
   //this->updateGraphicsScene();
 
-  if (followCamera) {
-    dBodyID waist = simWorld->getBody()->bodies[CapBody::WAIST_BODY];
-    const dReal* pos = dBodyGetPosition(waist);
-    QVector3D oldPos = camera.getPosition();
+  if (follow_camera) {
+    dBodyID waist = sim_world->getBody()->body_segments[CapBody::WAIST_BODY];
+    const dReal* position = dBodyGetPosition(waist);
+    QVector3D old_position = camera.getPosition();
 
-    camera.setPosition(QVector3D(pos[0]+offset.x(),
-                                 pos[1]+offset.y(),
-                                 oldPos.z()));
+    camera.setPosition(QVector3D(position[0]+offset.x(),
+                                 position[1]+offset.y(),
+                                 old_position.z()));
   }
   this->updateGL();
 }
@@ -207,12 +207,12 @@ void MyGLWidget::animate()
 void MyGLWidget::resizeGL(int width, int height)
 {
   if ( height == 0 ) height = 1;
-  aRatio = width / double(height);
+  aspect_ratio = width / double(height);
 
   glViewport( 0, 0, ( GLint )width, ( GLint )height );
   glMatrixMode( GL_PROJECTION );
   glLoadIdentity();
-  gluPerspective( fovy, aRatio, nearClip, farClip );
+  gluPerspective( fovy, aspect_ratio, near_clip, far_clip );
 
 }
 
@@ -344,20 +344,20 @@ void MyGLWidget::rotateByQuaternion(const dReal* Q)
 
 void MyGLWidget::renderGeom(dGeomID gg)
 {
-  int gClass = dGeomGetClass( gg );
+  int geometry_class = dGeomGetClass( gg );
 
   /*if (mouseSet.count(gg)>0) {
     glColor3f(1,0,0);
   } else {
     glColor3f(1,1,1);
   }*/
-  switch (gClass) {
+  switch (geometry_class) {
     case dSphereClass:
       {
         glPushMatrix();
         applyGeomTransform(gg);
         dReal radius = dGeomSphereGetRadius( gg );
-        glColor4d(1,.7,.2,bodyAlpha);
+        glColor4d(1,.7,.2,body_alpha);
         renderSphere(radius);
         glPopMatrix();
       } break;
@@ -367,7 +367,7 @@ void MyGLWidget::renderGeom(dGeomID gg)
         applyGeomTransform(gg);
         dVector3 sides;
         dGeomBoxGetLengths( gg,sides );
-        glColor4d(1,.7,.2,bodyAlpha);
+        glColor4d(1,.7,.2,body_alpha);
         renderBox(sides);
         glPopMatrix();
       } break;
@@ -377,7 +377,7 @@ void MyGLWidget::renderGeom(dGeomID gg)
         applyGeomTransform(gg);
         dReal radius, length;
         dGeomCapsuleGetParams( gg ,&radius,&length );
-        glColor4d(1,.7,.2,bodyAlpha);
+        glColor4d(1,.7,.2,body_alpha);
         renderCapsule(radius,length);
         glPopMatrix();
       } break;
@@ -608,7 +608,7 @@ void MyGLWidget::renderPlane(dVector4 planeEq)
 void MyGLWidget::renderRoom()
 {
 
-  glBindTexture(GL_TEXTURE_2D,woodTex);
+  glBindTexture(GL_TEXTURE_2D,wood_texture);
   glColor3d(1,1,1);
   glDisable(GL_TEXTURE_GEN_S);
   glDisable(GL_TEXTURE_GEN_T);
@@ -626,7 +626,7 @@ void MyGLWidget::renderRoom()
     glVertex3f( 3, 9,0);
   glEnd();
 
-  glBindTexture(GL_TEXTURE_2D,ceilingTex);
+  glBindTexture(GL_TEXTURE_2D,ceiling_texture);
   glBegin(GL_QUADS);
     glColor3f(1,1,1);
     glNormal3f(0,0,-1);
@@ -640,7 +640,7 @@ void MyGLWidget::renderRoom()
     glVertex3f(-3,-3,6);
   glEnd();
 
-  glBindTexture(GL_TEXTURE_2D,cementTex);
+  glBindTexture(GL_TEXTURE_2D,cement_texture);
   glBegin(GL_QUADS);
   glNormal3f(1,0,0);
   glTexCoord2d(6,0);
@@ -700,7 +700,7 @@ void MyGLWidget::renderGeomShadow(dGeomID gg)
 
         dReal radius = dGeomSphereGetRadius( gg );
         const dReal* pos = dGeomGetPosition(gg);
-        findSphereShadow(lightPos,pos,
+        findSphereShadow(light_pos,pos,
           radius,25,shadowRad,tm,tmp);
         renderSphereShadow(25,pos,&shadowRad[0],tm);
       } break;
@@ -713,7 +713,7 @@ void MyGLWidget::renderGeomShadow(dGeomID gg)
         double boxPoint[2][8][3];
 
         dGeomBoxGetLengths( gg,sides );
-        findBoxShadow(lightPos,pos,sides,
+        findBoxShadow(light_pos,pos,sides,
           rotation,25,caseVal,boxPoint);
         renderBoxShadow(pos,rotation,caseVal,boxPoint);
       }	break;
@@ -728,7 +728,7 @@ void MyGLWidget::renderGeomShadow(dGeomID gg)
         double capTM[2][16];
         double bodyPoint[8][3];
 
-        findCapsuleShadow(lightPos,pos,radius,rotation,
+        findCapsuleShadow(light_pos,pos,radius,rotation,
           length,25,capCenter,capRadius,capTM,bodyPoint);
         renderCapsuleShadow(25,capCenter,capRadius,capTM,bodyPoint);
       }	break;
@@ -1150,15 +1150,15 @@ void MyGLWidget::renderSpace(dSpaceID space)
 
 void MyGLWidget::renderLineList()
 {
-  while (simWorld->lineList.size()>2000) simWorld->lineList.pop_front();
-  int cnt = simWorld->lineList.size();
+  while (sim_world->line_list.size()>2000) sim_world->line_list.pop_front();
+  int cnt = sim_world->line_list.size();
 
   glLineWidth(5.0);
   glBegin(GL_LINES);
   for (int ii=0;ii<cnt;++ii) {
-    glColor3dv(simWorld->lineList[ii].col);
-    glVertex3dv(simWorld->lineList[ii].p1);
-    glVertex3dv(simWorld->lineList[ii].p2);
+    glColor3dv(sim_world->line_list[ii].col);
+    glVertex3dv(sim_world->line_list[ii].p1);
+    glVertex3dv(sim_world->line_list[ii].p2);
   }
   glEnd();
   glLineWidth(1.0);
@@ -1192,33 +1192,33 @@ void MyGLWidget::renderSimWorld(SimWorld* world)
     point and a connecting line.
     */
   glDisable(GL_TEXTURE_2D);
-  if (showMarkers) {
+  if (show_markers) {
     const dReal* mPos;
     dVector3 mappedPoint;
     const dReal* rPos;
     for (int ii=0;ii<MARKER_COUNT;++ii) {
-      rPos = cb->markerToBody[ii].pos;
+      rPos = cb->marker_to_body[ii].position;
       mPos = dBodyGetPosition(md->body[ii]);
       //if (mPos[2]<=0) continue;
-      int id = cb->markerToBody[ii].id;
+      int id = cb->marker_to_body[ii].id;
       if (id>=0 && id<=50) {
-        dBodyGetRelPointPos(cb->bodies[id],
+        dBodyGetRelPointPos(cb->body_segments[id],
                           rPos[0],rPos[1],rPos[2],mappedPoint);
         if (mPos[2]>0) {
-          if (md->tryLink[ii]) glColor3d(0,.7,0);
+          if (md->try_link[ii]) glColor3d(0,.7,0);
           else glColor3d(.7,0,0);
           glPushMatrix();
           glTranslated(mPos[0],mPos[1],mPos[2]);
           renderSphere(.01,10,5);
           glPopMatrix();
-          if (md->tryLink[ii]) {
+          if (md->try_link[ii]) {
             glBegin(GL_LINES);
               glVertex3dv(mPos);
               glVertex3dv(mappedPoint);
             glEnd();
           }
         }
-        if (md->tryLink[ii]) {
+        if (md->try_link[ii]) {
            glColor3d(0,.2,.5);
            glPushMatrix();
            glTranslated(mappedPoint[0],mappedPoint[1],mappedPoint[2]);
@@ -1228,7 +1228,7 @@ void MyGLWidget::renderSimWorld(SimWorld* world)
       }
     }
 
-    if (drawLines) renderLineList();
+    if (draw_lines) renderLineList();
   }
   glEnable(GL_TEXTURE_2D);
 
@@ -1312,7 +1312,7 @@ void MyGLWidget::renderSimWorld(SimWorld* world)
 
 
 
-  glBindTexture(GL_TEXTURE_2D,noiseTex);
+  glBindTexture(GL_TEXTURE_2D,noise_texture);
 
   // Draw the targets
   /*
@@ -1416,14 +1416,14 @@ void MyGLWidget::renderScene()
   camera.getCMajorInvTrans(mat);
   glMultMatrixd(mat);
 
-  glLightfv(GL_LIGHT0, GL_POSITION, lightPos);    // Set light position
+  glLightfv(GL_LIGHT0, GL_POSITION, light_pos);    // Set light position
 
   //glDisable(GL_LIGHTING);
   //bd->render();
   //glEnable(GL_LIGHTING);
   // Draw the unshaded things
-  glNewList(frontList,GL_COMPILE_AND_EXECUTE);
-  renderSimWorld(simWorld);
+  glNewList(front_list,GL_COMPILE_AND_EXECUTE);
+  renderSimWorld(sim_world);
   glEndList();
 
   //Prepare to stencil on some shadows
@@ -1439,15 +1439,15 @@ void MyGLWidget::renderScene()
   glStencilOp(GL_KEEP, GL_KEEP, GL_INCR);
 
   // Draw the shadow backs.
-  glNewList(shadowList,GL_COMPILE_AND_EXECUTE);
-  renderSimWorldShadows(simWorld);
+  glNewList(shadow_list,GL_COMPILE_AND_EXECUTE);
+  renderSimWorldShadows(sim_world);
   glEndList();
 
   // second pass, stencil operation decreases stencil value
   // Draw the shadow fronts
   glFrontFace(GL_CW);
   glStencilOp(GL_KEEP, GL_KEEP, GL_DECR);
-  glCallList(shadowList);
+  glCallList(shadow_list);
 
   // Restore the state machine to rendering mode
   glFrontFace(GL_CCW);
@@ -1456,13 +1456,13 @@ void MyGLWidget::renderScene()
   glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
   glEnable(GL_LIGHTING);
 
-  glLightfv(GL_LIGHT0, GL_DIFFUSE, lightAmb);		// ``Turnoff'' the Diffuse Light
+  glLightfv(GL_LIGHT0, GL_DIFFUSE, light_ambient);		// ``Turnoff'' the Diffuse Light
   glClear( GL_DEPTH_BUFFER_BIT );
   glDepthFunc(GL_LEQUAL);
   glDepthMask(GL_TRUE);
-  glCallList(frontList);                        // Draw the shadowed areas
+  glCallList(front_list);                        // Draw the shadowed areas
   glDisable(GL_STENCIL_TEST);
-  glLightfv(GL_LIGHT0, GL_DIFFUSE, lightDif);		// Restore the Diffuse Light
+  glLightfv(GL_LIGHT0, GL_DIFFUSE, light_diffuse);		// Restore the Diffuse Light
   glPopMatrix();
 
   //glFlush();
@@ -1475,11 +1475,11 @@ void MyGLWidget::initializeGraphicsScene()
   scene.setAxis(500,10,100);
 
   for (int ii=0;ii<11;++ii) {
-    gpItem[ii]=new QGraphicsPathItem(0,&scene);
-    gpItem[ii]->setPen(QPen(QColor(rand()%250,rand()%250,rand()%250)));
+    graphics_path_item[ii]=new QGraphicsPathItem(0,&scene);
+    graphics_path_item[ii]->setPen(QPen(QColor(rand()%250,rand()%250,rand()%250)));
 
-    textItem[ii]=new QGraphicsTextItem(0,&scene);
-    textItem[ii]->setFont(QFont(QString("Helvetica"),20));
+    text_item[ii]=new QGraphicsTextItem(0,&scene);
+    text_item[ii]->setFont(QFont(QString("Helvetica"),20));
   }
 
 

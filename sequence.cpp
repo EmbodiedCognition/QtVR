@@ -4,7 +4,7 @@
  * Copyright (c) 2013 Joseph Cooper                                         *
  *                                                                          *
  * This software is provided 'as-is', without any express or implied        *
- * warranty. In no event will the authors be held liable for any damages    *
+ * warow_indexanty. In no event will the authors be held liable for any damages    *
  * arising from the use of this software.                                   *
  *                                                                          *
  * Permission is granted to anyone to use this software for any purpose,    *
@@ -82,8 +82,8 @@ Sequence::Sequence(QObject *parent) :
     QObject(parent)
 {
   paths=0;
-  rsize=0;
-  csize=0;
+  row_count=0;
+  column_count=0;
 }
 
 Sequence::~Sequence()
@@ -101,64 +101,64 @@ int Sequence::size()
   return data.size();
 }
 
-double Sequence::value(int tt,int rr,int cc)
+double Sequence::value(int data_type,int row_index,int column_index)
 {
 
   //return rand()/double(RAND_MAX);
-  if (tt<0 || tt>=data.size()) return 0;
-  return data[tt]->getData(rr,cc);
+  if (data_type<0 || data_type>=data.size()) return 0;
+  return data[data_type]->getData(row_index,column_index);
 }
 
-QPainterPath* Sequence::getPath(int rr,int cc)
+QPainterPath* Sequence::getPath(int row_index,int column_index)
 {
   if (!paths) 0;
-  return &paths[rr*csize + cc]  ;
+  return &paths[row_index*column_count + column_index]  ;
 }
 
-void Sequence::fillPath(QPainterPath* path,int t0,int t1,int rr,int cc)
+void Sequence::fillPath(QPainterPath* path,int t0,int t1,int row_index,int column_index)
 {
 
-  double total=fabs(value(t0,rr,cc));
+  double total=fabs(value(t0,row_index,column_index));
   path->moveTo(0,total);
   for (int ii=t0+1;ii<=t1;++ii) {
-    total+=fabs(value(ii,rr,cc));
+    total+=fabs(value(ii,row_index,column_index));
     //path->lineTo(ii-t0,total);
-    path->lineTo(ii-t0,fabs(value(ii,rr,cc)));
+    path->lineTo(ii-t0,fabs(value(ii,row_index,column_index)));
   }
 
-  /*path->moveTo(t0,value(t0,rr,cc));
+  /*path->moveTo(t0,value(t0,row_index,column_index));
   for (int ii=t0+1;ii<=t1;++ii) {
-    path->lineTo(ii,value(ii,rr,cc));
+    path->lineTo(ii,value(ii,row_index,column_index));
   }*/
 }
 
 void Sequence::createPaths(DataFrame* frame)
 {
-  int rr = rsize = frame->rows();
-  int cc = csize = frame->cols();
+  int row = row_count = frame->rows();
+  int column = column_count = frame->cols();
 
   paths = new QPainterPath[frame->rows()*frame->cols()];
-  for (int ii=0;ii<rr;++ii) {
-    for (int jj=0;jj<cc;++jj) {
-      paths[ii*csize + jj].moveTo(0,frame->getData(ii,jj));
+  for (int ii=0;ii<row_count;++ii) {
+    for (int jj=0;jj<column_count;++jj) {
+      paths[ii*column_count + jj].moveTo(0,frame->getData(ii,jj));
     }
   }
 }
 
 void Sequence::updatePaths(DataFrame* frame)
 {
-  int rr = rsize;
-  int cc = csize;
+  int row_index = row_count;
+  int column_index = column_count;
 
   int xx = data.size();
   bool simp = (xx>0 && (xx%50==0));
 
 
-  for (int ii=0;ii<rr;++ii) {
-    for (int jj=0;jj<cc;++jj) {
-      paths[ii*csize + jj].lineTo(xx,frame->getData(ii,jj));
+  for (int ii=0;ii<row_index;++ii) {
+    for (int jj=0;jj<column_index;++jj) {
+      paths[ii*column_count + jj].lineTo(xx,frame->getData(ii,jj));
       if (simp) {
-        paths[ii*csize+jj] = paths[ii*csize+jj].simplified();
+        paths[ii*column_count+jj] = paths[ii*column_count+jj].simplified();
       }
 
     }
@@ -198,16 +198,16 @@ void Sequence::toFile(QString filename)
   int xx = data.size();
   if (xx<=0) return;
 
-  int rr = data[0]->rows();
-  int cc = data[0]->cols();
+  int row_index = data[0]->rows();
+  int column_index = data[0]->cols();
 
   QFile file(filename);
   if (!file.open(QFile::WriteOnly | QIODevice::Truncate | QIODevice::Text)) return;
   QTextStream out(&file);
 
   for (int kk=0;kk<xx;++kk) {
-    for (int ii=0;ii<rr;++ii) {
-      for (int jj=0;jj<cc;++jj) {
+    for (int ii=0;ii<row_index;++ii) {
+      for (int jj=0;jj<column_index;++jj) {
         out << data[kk]->getData(ii,jj) << " ";
       }
     }

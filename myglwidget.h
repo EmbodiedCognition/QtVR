@@ -45,7 +45,7 @@ class MyGLWidget : public QGLWidget
 public:
     explicit MyGLWidget(QWidget *parent = 0);
 
-  SimWorld* getWorld() { return simWorld; }
+  SimWorld* getWorld() { return sim_world; }
 
 #if defined( BOARD_DATA )
   void setBoardData(BoardData* dat) {bd = dat;}
@@ -122,19 +122,19 @@ public:
 
   GLUquadric* quadric;
 
-  double aRatio;
+  double aspect_ratio;
   double fovy;
-  double nearClip,farClip;
+  double near_clip,far_clip;
   double angle;
   QTimer animationTimer;
 
-  GLuint noiseTex;
-  GLuint racquetTex;
-  GLuint woodTex;
-  GLuint cementTex;
-  GLuint ceilingTex;
+  GLuint noise_texture;
+  GLuint racquet_texture;
+  GLuint wood_texture;
+  GLuint cement_texture;
+  GLuint ceiling_texture;
 
-  SimWorld* simWorld;
+  SimWorld* sim_world;
 
 #if defined( BOARD_DATA )
   BoardData* bd;
@@ -142,27 +142,27 @@ public:
   //QGraphicsScene scene;
   MyGraphicsScene scene;
   QuatCamera camera;
-  static float lightPos[4];
-  static float lightAmb[4];
-  static float lightDif[4];
-  static float lightSpc[4];
-  static float lightZro[4];
+  static float light_pos[4];
+  static float light_ambient[4];
+  static float light_diffuse[4];
+  static float light_spectral[4];
+  static float light_zro[4];
 
-  GLuint frontList;
-  GLuint shadowList;
+  GLuint front_list;
+  GLuint shadow_list;
 
   //QGraphicsLineItem* sceneItem[500];
 
-  QGraphicsPathItem* gpItem[11];
-  QGraphicsTextItem* textItem[11];
+  QGraphicsPathItem* graphics_path_item[11];
+  QGraphicsTextItem* text_item[11];
 
-  bool drawLines;
-  bool followCamera;
-  bool showMarkers;
+  bool draw_lines;
+  bool follow_camera;
+  bool show_markers;
 
   QVector3D offset;
 
-  double bodyAlpha;
+  double body_alpha;
 
 
 

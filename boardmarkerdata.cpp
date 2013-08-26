@@ -146,19 +146,19 @@ void BoardMarkerData::step()
   }
 
   for (int ii=0;ii<MARKER_COUNT;++ii) {
-    int bID = cBody->markerToBody[ii].id;
+    int bID = cBody->marker_to_body[ii].id;
     if (tryLink[ii] && (bID>=0) &&
         (cFrame->markers[ii][3]>0) &&
         (nFrame->markers[ii][3]>0))
     {
       joint[ii]=dJointCreateBall(world,jointGroup);
 
-      dJointAttach(joint[ii],body[ii],cBody->bodies[bID]);
+      dJointAttach(joint[ii],body[ii],cBody->body_segments[bID]);
       dJointSetBallAnchor1Rel(joint[ii],0,0,0);
       dJointSetBallAnchor2Rel(joint[ii],
-                              cBody->markerToBody[ii].pos[0],
-                              cBody->markerToBody[ii].pos[1],
-                              cBody->markerToBody[ii].pos[2]);
+                              cBody->marker_to_body[ii].position[0],
+                              cBody->marker_to_body[ii].position[1],
+                              cBody->marker_to_body[ii].position[2]);
       dJointSetBallParam(joint[ii],dParamCFM,.0001);
       dJointSetBallParam(joint[ii],dParamERP,.2);
     }
@@ -190,7 +190,7 @@ void BoardMarkerData::setFrame(int frame)
 
 void BoardMarkerData::changeBodyConnect(int mark,int body)
 {
-  cBody->markerToBody[mark].id=body;
+  cBody->marker_to_body[mark].id=body;
 }
 
 void BoardMarkerData::changeBodyLink(int mark,bool link)
@@ -200,9 +200,9 @@ void BoardMarkerData::changeBodyLink(int mark,bool link)
 
 void BoardMarkerData::changeLinkPos(int mark,double xx,double yy,double zz)
 {
-  cBody->markerToBody[mark].pos[0]=xx;
-  cBody->markerToBody[mark].pos[1]=yy;
-  cBody->markerToBody[mark].pos[2]=zz;
+  cBody->marker_to_body[mark].position[0]=xx;
+  cBody->marker_to_body[mark].position[1]=yy;
+  cBody->marker_to_body[mark].position[2]=zz;
 }
 
 

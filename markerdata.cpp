@@ -32,38 +32,38 @@ MarkerData::MarkerData(dWorldID world,dSpaceID space,QObject *parent) :
 {
   this->world=world;
   this->space=space;
-
   data.loadFile("data/data.c3d");
+  std::cout << "[markerdata] Marker file loaded...";
+  marker_count = data.data.pointsPerFrame;
+  std::cout << "  ...this file contains " << marker_count << " markers" << std::endl;
+  old_c_frame = c_frame = new C3dFloatFrame(marker_count);
+  old_n_frame = n_frame = new C3dFloatFrame(marker_count);
 
-  markCnt = data.data.pointsPerFrame;
-  cOld = cFrame = new C3dFloatFrame(markCnt);
-  nOld = nFrame = new C3dFloatFrame(markCnt);
-
-  geom = new dGeomID[markCnt];
-  body = new dBodyID[markCnt];
-  joint = new dJointID[markCnt];
-  tryLink = new bool[markCnt];
+  geom = new dGeomID[marker_count];
+  body = new dBodyID[marker_count];
+  joint = new dJointID[marker_count];
+  try_link = new bool[marker_count];
 
   //space = dSimpleSpaceCreate(0);
-  jointGroup = dJointGroupCreate(0);
-  for (int ii=0;ii<markCnt;++ii) {
+  joint_group = dJointGroupCreate(0);
+  for (int ii=0;ii<marker_count;++ii) {
     body[ii] = dBodyCreate(world);
     dBodySetKinematic(body[ii]);
     geom[ii] = dCreateSphere(space,.01);
     dGeomSetBody(geom[ii],body[ii]);
-    tryLink[ii]=false;
-    joint[ii] = dJointCreateBall(world,jointGroup);
+    try_link[ii]=false;
+    joint[ii] = dJointCreateBall(world,joint_group);
   }
 
 
 
-  framesPerStep=2;
-  timePerStep = .015;
-  currentFrame = 0;
+  frames_per_step=2;
+  time_per_step = .015;
+  current_frame = 0;
   paused=true;
-  singleStep=false;
+  single_step=false;
 
-  vMarkers=false;
+  use_virtual_markers=false;
 
 }
 
@@ -97,56 +97,56 @@ void MarkerData::step()
   // Get the next frame
 
 
-  if (!vMarkers) {
-    data.readFrame(currentFrame,cFrame);
-    data.readFrame(currentFrame+framesPerStep,nFrame);
+  if (!use_virtual_markers) {
+    data.readFrame(current_frame,c_frame);
+    data.readFrame(current_frame+frames_per_step,n_frame);
   } else {
-    if (vPoint>=0 && vPoint<shadowData.size()) {
-      cFrame = shadowData[vPoint];
-      if (vPoint==shadowData.size()-1) {
-        nFrame = shadowData[vPoint];
+    if (virtual_point>=0 && virtual_point<shadow_data.size()) {
+      c_frame = shadow_data[virtual_point];
+      if (virtual_point==shadow_data.size()-1) {
+        n_frame = shadow_data[virtual_point];
       } else {
-        nFrame = shadowData[vPoint+1];
+        n_frame = shadow_data[virtual_point+1];
       }
 
     } else {
-      cFrame = nFrame = shadowData.last();
+      c_frame = n_frame = shadow_data.last();
     }
   }
-  dJointGroupEmpty(jointGroup);
+  dJointGroupEmpty(joint_group);
 
-  if (paused && !singleStep) {
-    for (int ii=0;ii<markCnt;++ii) {
+  if (paused && !single_step) {
+    for (int ii=0;ii<marker_count;++ii) {
       float xx,yy,zz;
-      xx = cFrame->data[ii].point[0]*.001;
-      yy = cFrame->data[ii].point[1]*.001;
-      zz = cFrame->data[ii].point[2]*.001;
-      if (cFrame->data[ii].point[3]<0) zz=-1;
+      xx = c_frame->data[ii].point[0]*.001;
+      yy = c_frame->data[ii].point[1]*.001;
+      zz = c_frame->data[ii].point[2]*.001;
+      if (c_frame->data[ii].point[3]<0) zz=-1;
       dBodySetLinearVel(body[ii],0,0,0);
       dBodySetPosition(body[ii],xx,yy,zz);
 
     }
 
   } else {
-    for (int ii=0;ii<markCnt;++ii) {
+    for (int ii=0;ii<marker_count;++ii) {
       float xx,yy,zz;
-      xx = cFrame->data[ii].point[0]*.001;
-      yy = cFrame->data[ii].point[1]*.001;
-      zz = cFrame->data[ii].point[2]*.001;
-      if (cFrame->data[ii].point[3]<0) zz=-1;
+      xx = c_frame->data[ii].point[0]*.001;
+      yy = c_frame->data[ii].point[1]*.001;
+      zz = c_frame->data[ii].point[2]*.001;
+      if (c_frame->data[ii].point[3]<0) zz=-1;
 
       float dx,dy,dz;
-      dx = nFrame->data[ii].point[0]*.001 - xx;
-      dy = nFrame->data[ii].point[1]*.001 - yy ;
-      dz = nFrame->data[ii].point[2]*.001 - zz;
+      dx = n_frame->data[ii].point[0]*.001 - xx;
+      dy = n_frame->data[ii].point[1]*.001 - yy ;
+      dz = n_frame->data[ii].point[2]*.001 - zz;
 
-      dBodySetLinearVel(body[ii],dx/timePerStep,dy/timePerStep,dz/timePerStep);
+      dBodySetLinearVel(body[ii],dx/time_per_step,dy/time_per_step,dz/time_per_step);
       dBodySetPosition(body[ii],xx,yy,zz);
     }
     //currentFrame+=framesPerStep;
-    setFrame(currentFrame+framesPerStep);
-    if (vMarkers) vPoint+=1;
-    singleStep = false;
+    setFrame(current_frame+frames_per_step);
+    if (use_virtual_markers) virtual_point+=1;
+    single_step = false;
 
   }
 
@@ -157,29 +157,29 @@ void MarkerData::step()
     in the .pro file as MARKER_COUNT.
     */
   for (int ii=0;ii<MARKER_COUNT;++ii) {
-    int bID = cBody->markerToBody[ii].id;
+    int bID = body_pointer->marker_to_body[ii].id;
 
-    if (tryLink[ii] && (bID>=0) &&
-        (cFrame->data[ii].point[3]>0) &&
-        (nFrame->data[ii].point[3]>0))
+    if (try_link[ii] && (bID>=0) &&
+        (c_frame->data[ii].point[3]>0) &&
+        (n_frame->data[ii].point[3]>0))
     {
-      joint[ii]=dJointCreateBall(world,jointGroup);
+      joint[ii]=dJointCreateBall(world,joint_group);
 
-      dJointAttach(joint[ii],body[ii],cBody->bodies[bID]);
+      dJointAttach(joint[ii],body[ii],body_pointer->body_segments[bID]);
       dJointSetBallAnchor1Rel(joint[ii],0,0,0);
       dJointSetBallAnchor2Rel(joint[ii],
-                              cBody->markerToBody[ii].pos[0],
-                              cBody->markerToBody[ii].pos[1],
-                              cBody->markerToBody[ii].pos[2]);
+                              body_pointer->marker_to_body[ii].position[0],
+                              body_pointer->marker_to_body[ii].position[1],
+                              body_pointer->marker_to_body[ii].position[2]);
       dJointSetBallParam(joint[ii],dParamCFM,.0001);
       dJointSetBallParam(joint[ii],dParamERP,.2);
     }
 
   }
 
-  if (vMarkers){
-    cFrame = cOld;
-    nFrame = nOld;
+  if (use_virtual_markers){
+    c_frame = old_c_frame;
+    n_frame = old_n_frame;
   }
 
 
@@ -193,14 +193,14 @@ void MarkerData::setPaused(bool playing)
 
 void MarkerData::setSingleStep()
 {
-  singleStep=true;
+  single_step=true;
   paused = true;
 }
 
 void MarkerData::setFrame(int frame)
 {
-  if (frame>=0 && frame<size() && currentFrame!=frame) {
-    currentFrame=frame;
+  if (frame>=0 && frame<size() && current_frame!=frame) {
+    current_frame=frame;
     emit frameChanged(frame);
 
   }
@@ -209,19 +209,19 @@ void MarkerData::setFrame(int frame)
 
 void MarkerData::changeBodyConnect(int mark,int body)
 {
-  cBody->markerToBody[mark].id=body;
+  body_pointer->marker_to_body[mark].id=body;
 }
 
 void MarkerData::changeBodyLink(int mark,bool link)
 {
-  tryLink[mark]=link;
+  try_link[mark]=link;
 }
 
 void MarkerData::changeLinkPos(int mark,double xx,double yy,double zz)
 {
-  cBody->markerToBody[mark].pos[0]=xx;
-  cBody->markerToBody[mark].pos[1]=yy;
-  cBody->markerToBody[mark].pos[2]=zz;
+  body_pointer->marker_to_body[mark].position[0]=xx;
+  body_pointer->marker_to_body[mark].position[1]=yy;
+  body_pointer->marker_to_body[mark].position[2]=zz;
 }
 
 
@@ -232,19 +232,19 @@ void MarkerData::changeLinkPos(int mark,double xx,double yy,double zz)
 void MarkerData::captureVirtualMarkers()
 {
   dVector4 pt;
-  C3dFloatFrame* frame = new C3dFloatFrame(markCnt);
-  C3dFloatFrame* shadowFrame = new C3dFloatFrame(markCnt);
+  C3dFloatFrame* frame = new C3dFloatFrame(marker_count);
+  C3dFloatFrame* shadowFrame = new C3dFloatFrame(marker_count);
 
 
   for (int ii=0;ii<MARKER_COUNT;++ii) {
-    if (cBody->markerToBody[ii].id>=0) {
+    if (body_pointer->marker_to_body[ii].id>=0) {
       // Find the global coordinate of the
       // relative position to which the
       // marker is mapped
-      dBodyGetRelPointPos(cBody->bodies[cBody->markerToBody[ii].id],
-                          cBody->markerToBody[ii].pos[0],
-                          cBody->markerToBody[ii].pos[1],
-                          cBody->markerToBody[ii].pos[2],
+      dBodyGetRelPointPos(body_pointer->body_segments[body_pointer->marker_to_body[ii].id],
+                          body_pointer->marker_to_body[ii].position[0],
+                          body_pointer->marker_to_body[ii].position[1],
+                          body_pointer->marker_to_body[ii].position[2],
                           pt);
       pt[3]=1;
     } else {
@@ -256,27 +256,27 @@ void MarkerData::captureVirtualMarkers()
     frame->data[ii].point[2]=pt[2]*1000;
     frame->data[ii].point[3]=pt[3];
   }
-  vData.push_back(frame);
-  memcpy(shadowFrame->data,frame->data,markCnt*sizeof(FPoint));
-  shadowData.push_back(shadowFrame);
+  virtual_data.push_back(frame);
+  memcpy(shadowFrame->data,frame->data,marker_count*sizeof(FPoint));
+  shadow_data.push_back(shadowFrame);
 
 }
 
 void MarkerData::clearVirtualMarkers()
 {
-  int fCount = vData.size();
+  int fCount = virtual_data.size();
   for (int ii=0;ii<fCount;++ii) {
-    delete(vData[ii]);
-    delete(shadowData[ii]);
+    delete(virtual_data[ii]);
+    delete(shadow_data[ii]);
   }
-  vData.clear();
-  shadowData.clear();
+  virtual_data.clear();
+  shadow_data.clear();
 }
 
 void MarkerData::useVirtualMarkers(bool use)
 {
-  vMarkers = use;
-  vPoint = 0;
+  use_virtual_markers = use;
+  virtual_point = 0;
 }
 
 /**
@@ -286,13 +286,13 @@ void MarkerData::useVirtualMarkers(bool use)
   */
 void MarkerData::perturbShadowFrame(double sigma)
 {
-  int frameCnt = shadowData.size();
+  int frameCnt = shadow_data.size();
   for (int ii=0;ii<frameCnt;++ii) {
     for (int jj=0;jj<MARKER_COUNT;++jj) {
       for (int kk=0;kk<3;++kk) {
         double epsilon = sigma*randN();
-        double val = vData[ii]->data[jj].point[kk] + epsilon;
-        shadowData[ii]->data[jj].point[kk] = val;
+        double val = virtual_data[ii]->data[jj].point[kk] + epsilon;
+        shadow_data[ii]->data[jj].point[kk] = val;
 
       }
     }

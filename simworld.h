@@ -74,24 +74,24 @@ public:
 
 
 
-  //SwingData* getMarkerData() {return markData;}
-  //LiveMarkerData* getMarkerData() {return markData;}
+  //SwingData* getMarkerData() {return marker_data;}
+  //LiveMarkerData* getMarkerData() {return marker_data;}
 #if defined( BOARD_DATA )
-  BoardMarkerData* getMarkerData() {return markData;}
+  BoardMarkerData* getMarkerData() {return marker_data;}
 #elif defined( POKE_DATA )
-  PokeMarkerData* getMarkerData() {return markData;}
+  PokeMarkerData* getMarkerData() {return marker_data;}
 #else
-  MarkerData* getMarkerData() {return markData;}
+  MarkerData* getMarkerData() {return marker_data;}
 #endif
   dSpaceID getSpace() { return space; }
-  dSpaceID getMarkSpace() { return markSpace; }
-  dSpaceID getTargetSpace() {return targetSpace;}
+  dSpaceID getMarkSpace() { return marker_space; }
+  dSpaceID getTargetSpace() {return target_space;}
   CapBody* getBody() { return body; }
 
-  static void collideGeoms(void* data,dGeomID o1,dGeomID o2);
+  static void collideGeoms(void* data,dGeomID object_1_ID,dGeomID object_2_ID);
 
   void updateSeqFrame();
-  void applyTorquesToBody(DataFrame *jf);
+  void applyTorquesToBody(DataFrame *joint_frame);
 
 #if defined( BOARD_DATA )
   void updateBoards();
@@ -121,13 +121,13 @@ public slots:
   void setGroundFriction(double friction);
   void setTerrainSoftness(double terrain);
 
-  void setTerrainZ(double zVal); ///< Set the ground plane height
+  void setTerrainZ(double z_value); ///< Set the ground plane height
 
   /// Set the play-back state:
   /// Following InverseKinematics, InverseDynamics, or ForwardDynamics
   void follow(int type);
 
-  void setSelfCollide(bool hitSelf);
+  void setSelfCollide(bool hit_self);
 
   /// Open the specified file and write out recorded kinematics
   void anglesToFile(QString filename);
@@ -138,20 +138,20 @@ protected:
   dWorldID world; ///< Container for ODE dynamics
   dSpaceID space; ///< Container for ODE collision geometry
 
-  dGeomID groundPlane; ///< Ground plane
-  dGeomID mouseRay;    ///< For ray-picking
+  dGeomID ground_plane; ///< Ground plane
+  dGeomID mouse_ray;    ///< For ray-picking
 #if defined( BOARD_DATA )
   dGeomID board0;
   dGeomID board1;
 #endif
-  dJointGroupID contactGroup; ///< Holds contact joints
+  dJointGroupID contact_group; ///< Holds contact joints
 
   bool paused;      ///< Is the simulation paused
-  bool singleStep;  ///< Should the simulation advance by a single step
+  bool single_step;  ///< Should the simulation advance by a single step
 
   double stepsize;  ///< How much time for a single step
-  double groundSquish; ///< How 'soft' (CFM) are ground contacts
-  double groundFriction; ///< A strong (Fmax) is ground friction
+  double ground_squish; ///< How 'soft' (CFM) are ground contacts
+  double ground_friction; ///< A strong (Fmax) is ground friction
 
   CapBody* body;  ///< The character model
 
@@ -167,37 +167,37 @@ protected:
   //SwingData* markData;
   //LiveMarkerData* markData;
 #if defined( BOARD_DATA )
-  BoardMarkerData* markData;
+  BoardMarkerData* marker_data;
 #elif defined( POKE_DATA )
-  PokeMarkerData* markData;
+  PokeMarkerData* marker_data;
 #else
-  MarkerData* markData;   ///< MoCap Marker data (from Phasespace C3D file)
+  MarkerData* marker_data;   ///< MoCap Marker data (from Phasespace C3D file)
 #endif
 
 
-  dSpaceID targetSpace;  ///< When analysis includes target geometry, they go here.
-  dSpaceID markSpace;    ///< Spheres representing the markers go here
+  dSpaceID target_space;  ///< When analysis includes target geometry, they go here.
+  dSpaceID marker_space;    ///< Spheres representing the markers go here
 
-  bool selfCollide;  ///< Should the body collide with itself
-  int followState;   ///< Are we following markers, joint angles, or torques?
-  int seqFrame;      ///< What frame are we on as we move through an angle or torque sequence
+  bool self_collide;  ///< Should the body collide with itself
+  int follow_sequence_source_state;   ///< Are we following markers, joint angles, or torques?
+  int sequence_frame;      ///< What frame are we on as we move through an angle or torque sequence
 
-  FILE* mainFile;    ///< Kludge file handle for writing out whatever data is interesting at the moment
+  FILE* main_file;    ///< Kludge file handle for writing out whatever data is interesting at the moment
 
 public:
 
-  Sequence* angleSequence;  ///< The stored sequence of joint angles (kinematics)
-  Sequence* torqueSequence; ///< The stored sequence of torques/forces (dynamics)
+  Sequence* angle_sequence;  ///< The stored sequence of joint angles (kinematics)
+  Sequence* torque_sequence; ///< The stored sequence of torques/forces (dynamics)
 
-  int activeGroundContacts; ///< How many contacts were made with the ground
-  dJointFeedback groundFeedback[MAX_GROUND_FEEDBACK]; ///< Feedback structures for extracting ground forces
-  dVector3 contactPoint[MAX_GROUND_FEEDBACK]; ///< Contact points between body and ground
+  int number_active_ground_contacts; ///< How many contacts were made with the ground
+  dJointFeedback ground_feedback[MAX_GROUND_FEEDBACK]; ///< Feedback structures for extracting ground forces
+  dVector3 contact_point[MAX_GROUND_FEEDBACK]; ///< Contact points between body and ground
 
   /// Lines showing whatever information happened to be needed:
   /// Ground forces, residual torques, center of mass, aggregate momentum, etc.
-  QList<GLine> lineList;
-  QList<int> leftFootFeedback;  ///< Lines specifically showing ground forces from left foot
-  QList<int> rightFootFeedback; ///< Ground forces from right foot.
+  QList<GLine> line_list;
+  QList<int> left_foot_feedback;  ///< Lines specifically showing ground forces from left foot
+  QList<int> right_foot_feedback; ///< Ground forces from right foot.
 
 
 };

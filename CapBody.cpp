@@ -42,13 +42,13 @@ CapBody::CapBody(QObject *parent)
   : QObject(parent)
 {
   for (int ii=0;ii<JOINT_COUNT;++ii) {
-    jointTarget[ii][0]=0;
-    jointTarget[ii][1]=0;
-    jointTarget[ii][2]=0;
+    joint_target[ii][0]=0;
+    joint_target[ii][1]=0;
+    joint_target[ii][2]=0;
 
-    jointOffset[ii][0]=0;
-    jointOffset[ii][1]=0;
-    jointOffset[ii][2]=0;
+    joint_offset[ii][0]=0;
+    joint_offset[ii][1]=0;
+    joint_offset[ii][2]=0;
 
     joints[ii] = 0;
     limits[ii] = 0;
@@ -56,8 +56,8 @@ CapBody::CapBody(QObject *parent)
   }
   stepsize = .015;
 
-  keepRelAnchors=true;
-  globalForces = true;
+  keep_rel_anchors=true;
+  global_forces = true;
 }
 
 CapBody::~CapBody(void)
@@ -126,29 +126,29 @@ void CapBody::createBody(dWorldID world,dSpaceID space)
   createSphere(HEAD_BODY,    HEAD_GEOM,    .13 );
   createBox(   NECK_BODY,    NECK_GEOM,    .08,.08,.08);
   createCaps(  UP_TORSO_BODY,UP_TORSO_GEOM,.14,.20);
-  dBodySetQuaternion(bodies[UP_TORSO_BODY],turnLeft);
+  dBodySetQuaternion(body_segments[UP_TORSO_BODY],turnLeft);
   
   createCaps(  R_COLLAR_BODY,R_COLLAR_GEOM,.06,.09);
   createCaps(  RUP_ARM_BODY, RUP_ARM_GEOM, .05,.27);
   createCaps(  RLO_ARM_BODY, RLO_ARM_GEOM, .04 ,.17);
   createSphere(R_HAND_BODY,  R_HAND_GEOM,  .045);
-  dBodySetQuaternion(bodies[R_COLLAR_BODY],turnLeft);
+  dBodySetQuaternion(body_segments[R_COLLAR_BODY],turnLeft);
   
   createCaps(  L_COLLAR_BODY,L_COLLAR_GEOM,.06,.09);
   createCaps(  LUP_ARM_BODY, LUP_ARM_GEOM, .05,.27);
   createCaps(  LLO_ARM_BODY, LLO_ARM_GEOM, .04 ,.17);
   createSphere(L_HAND_BODY,  L_HAND_GEOM,  .045);
-  dBodySetQuaternion(bodies[L_COLLAR_BODY],turnRight);
+  dBodySetQuaternion(body_segments[L_COLLAR_BODY],turnRight);
 
   createBox(   LO_TORSO_BODY,LO_TORSO_GEOM,.35,.15,.20);
   createCaps(  WAIST_BODY,   WAIST_GEOM,   .07,.20);
-  dBodySetQuaternion(bodies[WAIST_BODY],turnLeft);
+  dBodySetQuaternion(body_segments[WAIST_BODY],turnLeft);
   
   createCaps(  RUP_LEG_BODY, RUP_LEG_GEOM, .10,.30);
   createCaps(  RLO_LEG_BODY, RLO_LEG_GEOM, .08,.28);
   createSphere(R_HEEL_BODY,  R_HEEL_GEOM,  .07);
   createCaps(  R_TARSAL_BODY,   R_TARSAL_GEOM,   .03,.04);
-  dBodySetQuaternion(bodies[R_TARSAL_BODY],turnLeft);
+  dBodySetQuaternion(body_segments[R_TARSAL_BODY],turnLeft);
  // createCaps(  R_TOE_BODY,   R_TOE_GEOM,   .03,.03);
  // dBodySetQuaternion(bodies[R_TOE_BODY],turnLeft);
   
@@ -156,7 +156,7 @@ void CapBody::createBody(dWorldID world,dSpaceID space)
   createCaps(  LLO_LEG_BODY, LLO_LEG_GEOM, .08,.28);
   createSphere(L_HEEL_BODY,  L_HEEL_GEOM,  .07);
   createCaps(  L_TARSAL_BODY,   L_TARSAL_GEOM,   .03,.04);
-  dBodySetQuaternion(bodies[L_TARSAL_BODY],turnRight);
+  dBodySetQuaternion(body_segments[L_TARSAL_BODY],turnRight);
  // createCaps(  L_TOE_BODY,   L_TOE_GEOM,   .03,.03);
  // dBodySetQuaternion(bodies[L_TOE_BODY],turnRight);
 
@@ -166,7 +166,7 @@ void CapBody::createBody(dWorldID world,dSpaceID space)
   // Now the body parts are built, we move the head
   // and then begin creating joints and attaching
   // them from the head down
-  dBodySetPosition(bodies[HEAD_BODY],0,0,2);
+  dBodySetPosition(body_segments[HEAD_BODY],0,0,2);
 
   createBall( CHIN_JOINT,HEAD_BODY,NECK_BODY,
     0,-.2,-.85,
@@ -349,7 +349,7 @@ void CapBody::createBody(dWorldID world,dSpaceID space)
 
   motors[ROOT_LINMOTOR_JOINT] =
   joints[ROOT_LINMOTOR_JOINT] = dJointCreateLMotor(world,0);
-  dJointAttach(joints[ROOT_LINMOTOR_JOINT],bodies[rootBody],0);
+  dJointAttach(joints[ROOT_LINMOTOR_JOINT],body_segments[rootBody],0);
   dJointSetLMotorNumAxes(joints[ROOT_LINMOTOR_JOINT],3);
   dJointSetLMotorAxis(joints[ROOT_LINMOTOR_JOINT],0,0,1,0,0);
   dJointSetLMotorAxis(joints[ROOT_LINMOTOR_JOINT],1,0,0,1,0);
@@ -363,12 +363,12 @@ void CapBody::createBody(dWorldID world,dSpaceID space)
   dJointSetLMotorParam(joints[ROOT_LINMOTOR_JOINT],dParamFMax1,FMAX);
   dJointSetLMotorParam(joints[ROOT_LINMOTOR_JOINT],dParamFMax2,FMAX);
   dJointSetLMotorParam(joints[ROOT_LINMOTOR_JOINT],dParamFMax3,FMAX);
-  jointInfo[ROOT_LINMOTOR_JOINT].link[0].id=rootBody;
-  jointInfo[ROOT_LINMOTOR_JOINT].link[1].id=-1;
+  joint_info[ROOT_LINMOTOR_JOINT].link[0].id=rootBody;
+  joint_info[ROOT_LINMOTOR_JOINT].link[1].id=-1;
 
   limits[ROOT_ANGMOTOR_JOINT] =
   joints[ROOT_ANGMOTOR_JOINT] = dJointCreateAMotor(world,0);
-  dJointAttach(joints[ROOT_ANGMOTOR_JOINT],bodies[rootBody],0);
+  dJointAttach(joints[ROOT_ANGMOTOR_JOINT],body_segments[rootBody],0);
   dJointSetAMotorNumAxes(joints[ROOT_ANGMOTOR_JOINT],3);
   dJointSetAMotorMode(joints[ROOT_ANGMOTOR_JOINT],dAMotorEuler);
   dJointSetAMotorAxis(joints[ROOT_ANGMOTOR_JOINT],0,1,1,0,0);
@@ -378,7 +378,7 @@ void CapBody::createBody(dWorldID world,dSpaceID space)
 
 
   motors[ROOT_ANGMOTOR_JOINT] = dJointCreateAMotor(world,0);
-  dJointAttach(motors[ROOT_ANGMOTOR_JOINT],bodies[rootBody],0);
+  dJointAttach(motors[ROOT_ANGMOTOR_JOINT],body_segments[rootBody],0);
   dJointSetAMotorNumAxes(motors[ROOT_ANGMOTOR_JOINT],3);
   dJointSetAMotorMode(motors[ROOT_ANGMOTOR_JOINT],dAMotorEuler);
   dJointSetAMotorAxis(motors[ROOT_ANGMOTOR_JOINT],0,1,1,0,0);
@@ -396,8 +396,8 @@ void CapBody::createBody(dWorldID world,dSpaceID space)
 
 
 
-  jointInfo[ROOT_ANGMOTOR_JOINT].link[0].id=rootBody;
-  jointInfo[ROOT_ANGMOTOR_JOINT].link[1].id=-1;
+  joint_info[ROOT_ANGMOTOR_JOINT].link[0].id=rootBody;
+  joint_info[ROOT_ANGMOTOR_JOINT].link[1].id=-1;
 
   for (int ii=0;ii<JOINT_COUNT;++ii) {
     dJointSetFeedback(motors[ii],&(feedback[ii]));
@@ -405,7 +405,7 @@ void CapBody::createBody(dWorldID world,dSpaceID space)
 
   for (int ii=0;ii<BODY_COUNT;++ii) {
     getBody(ii);
-    dBodySetData(bodies[ii],(void*)ii);
+    dBodySetData(body_segments[ii],(void*)ii);
   }
 }
 
@@ -413,33 +413,33 @@ void CapBody::createSphere(BodyType id,GeomType g,dReal radius)
 {
   dMass m;
   
-  bodies[id] = dBodyCreate(world);
-  geoms[g] = dCreateSphere(space,radius);
+  body_segments[id] = dBodyCreate(world);
+  geometries[g] = dCreateSphere(space,radius);
   dMassSetSphere(&m,density,radius);
-  dBodySetMass(bodies[id],&m);
-  dGeomSetBody(geoms[g],bodies[id]);
+  dBodySetMass(body_segments[id],&m);
+  dGeomSetBody(geometries[g],body_segments[id]);
 }
 
 void CapBody::createCaps(BodyType id,GeomType g,dReal radius,dReal zLen)
 {
   dMass m;
   
-  bodies[id] = dBodyCreate(world);
-  geoms[g] = dCreateCapsule(space,radius,zLen);
+  body_segments[id] = dBodyCreate(world);
+  geometries[g] = dCreateCapsule(space,radius,zLen);
   dMassSetCapsule(&m,density,3,radius,zLen);
-  dBodySetMass(bodies[id],&m);
-  dGeomSetBody(geoms[g],bodies[id]);
+  dBodySetMass(body_segments[id],&m);
+  dGeomSetBody(geometries[g],body_segments[id]);
 }
 
 void CapBody::createBox(BodyType id,GeomType g,dReal xLen,dReal yLen,dReal zLen)
 {
   dMass m;
   
-  bodies[id] = dBodyCreate(world);
-  geoms[g] = dCreateBox(space,xLen,yLen,zLen);
+  body_segments[id] = dBodyCreate(world);
+  geometries[g] = dCreateBox(space,xLen,yLen,zLen);
   dMassSetBox(&m,density,xLen,yLen,zLen);
-  dBodySetMass(bodies[id],&m);
-  dGeomSetBody(geoms[g],bodies[id]);
+  dBodySetMass(body_segments[id],&m);
+  dGeomSetBody(geometries[g],body_segments[id]);
 }
 
 /**
@@ -465,15 +465,15 @@ void CapBody::createBall(JointType jj,BodyType id1,BodyType id2,
 
   // Create the ball-and-socket joint
   joints[jj] = dJointCreateBall(world,0);
-  dJointAttach(joints[jj],bodies[id1],bodies[id2]);
+  dJointAttach(joints[jj],body_segments[id1],body_segments[id2]);
   dJointSetBallParam(joints[jj],dParamCFM,INTERNALCFM);
 
   bodyDims(id1,dim1);
   bodyDims(id2,dim2);
-  const dReal* pos2 = dBodyGetPosition(bodies[id2]);
-  dBodyGetRelPointPos(bodies[id1],px1*dim1[0]/2,py1*dim1[1]/2,pz1*dim1[2]/2,pp1);
-  dBodyGetRelPointPos(bodies[id2],px2*dim2[0]/2,py2*dim2[1]/2,pz2*dim2[2]/2,pp2);
-  dBodySetPosition(bodies[id2],
+  const dReal* pos2 = dBodyGetPosition(body_segments[id2]);
+  dBodyGetRelPointPos(body_segments[id1],px1*dim1[0]/2,py1*dim1[1]/2,pz1*dim1[2]/2,pp1);
+  dBodyGetRelPointPos(body_segments[id2],px2*dim2[0]/2,py2*dim2[1]/2,pz2*dim2[2]/2,pp2);
+  dBodySetPosition(body_segments[id2],
     pp1[0]-pp2[0]+pos2[0],
     pp1[1]-pp2[1]+pos2[1],
     pp1[2]-pp2[2]+pos2[2]);
@@ -481,7 +481,7 @@ void CapBody::createBall(JointType jj,BodyType id1,BodyType id2,
 
   // Create the AMotor in Euler mode for applying limits
   limits[jj] = dJointCreateAMotor(world,0);
-  dJointAttach(limits[jj],bodies[id1],bodies[id2]);
+  dJointAttach(limits[jj],body_segments[id1],body_segments[id2]);
   dJointSetAMotorMode( limits[jj], dAMotorEuler);
   dJointSetAMotorAxis(limits[jj],0,1,ax1,ay1,az1);
   dJointSetAMotorAxis(limits[jj],2,2,ax3,ay3,az3);
@@ -494,7 +494,7 @@ void CapBody::createBall(JointType jj,BodyType id1,BodyType id2,
 
   // Create the AMotors for achieving target joint angles
   motors[jj] = dJointCreateAMotor(world,0);
-  dJointAttach(motors[jj],bodies[id1],bodies[id2]);
+  dJointAttach(motors[jj],body_segments[id1],body_segments[id2]);
   dJointSetAMotorMode( motors[jj], dAMotorEuler);
   dJointSetAMotorAxis(motors[jj],0,1,ax1,ay1,az1);
   dJointSetAMotorAxis(motors[jj],2,2,ax3,ay3,az3);
@@ -505,8 +505,8 @@ void CapBody::createBall(JointType jj,BodyType id1,BodyType id2,
   dJointSetAMotorParam(motors[jj],dParamFMax2,FMAX);
   dJointSetAMotorParam(motors[jj],dParamFMax3,FMAX);
 
-  jointInfo[jj].link[0].id=id1;
-  jointInfo[jj].link[1].id=id2;
+  joint_info[jj].link[0].id=id1;
+  joint_info[jj].link[1].id=id2;
 
 }
 
@@ -561,7 +561,7 @@ void CapBody::createUni(JointType jj,BodyType id1,BodyType id2,
                   dReal lo2,dReal hi2)
 {
   joints[jj] = dJointCreateUniversal(world,0);
-  dJointAttach(joints[jj],bodies[id1],bodies[id2]);
+  dJointAttach(joints[jj],body_segments[id1],body_segments[id2]);
   dJointSetUniversalParam(joints[jj],dParamCFM,INTERNALCFM);
 
   // ***** Re-orient second body to match target
@@ -575,12 +575,12 @@ void CapBody::createUni(JointType jj,BodyType id1,BodyType id2,
 
   dVector3 pp1;
   dVector3 pp2;
-  const dReal* pos2 = dBodyGetPosition(bodies[id2]);
+  const dReal* pos2 = dBodyGetPosition(body_segments[id2]);
 
-  dBodyGetRelPointPos(bodies[id1],px1*dim1[0]/2,py1*dim1[1]/2,pz1*dim1[2]/2,pp1);
-  dBodyGetRelPointPos(bodies[id2],px2*dim2[0]/2,py2*dim2[1]/2,pz2*dim2[2]/2,pp2);
+  dBodyGetRelPointPos(body_segments[id1],px1*dim1[0]/2,py1*dim1[1]/2,pz1*dim1[2]/2,pp1);
+  dBodyGetRelPointPos(body_segments[id2],px2*dim2[0]/2,py2*dim2[1]/2,pz2*dim2[2]/2,pp2);
 
-  dBodySetPosition(bodies[id2],
+  dBodySetPosition(body_segments[id2],
     pp1[0]-pp2[0]+pos2[0],
     pp1[1]-pp2[1]+pos2[1],
     pp1[2]-pp2[2]+pos2[2]);
@@ -599,7 +599,7 @@ void CapBody::createUni(JointType jj,BodyType id1,BodyType id2,
   // monitor the forces used exclusive of the
   // constraints.
   motors[jj] = dJointCreateAMotor(world,0);
-  dJointAttach(motors[jj],bodies[id1],bodies[id2]);
+  dJointAttach(motors[jj],body_segments[id1],body_segments[id2]);
   dJointSetAMotorMode(motors[jj], dAMotorUser);
   dJointSetAMotorNumAxes(motors[jj],2);
   dJointSetAMotorAxis(motors[jj],0,1,hx1,hy1,hz1);
@@ -618,8 +618,8 @@ void CapBody::createUni(JointType jj,BodyType id1,BodyType id2,
   dJointSetAMotorParam(motors[jj],dParamFMax1,FMAX);
   dJointSetAMotorParam(motors[jj],dParamFMax2,FMAX);
   
-  jointInfo[jj].link[0].id=id1;
-  jointInfo[jj].link[1].id=id2;
+  joint_info[jj].link[0].id=id1;
+  joint_info[jj].link[1].id=id2;
 }
 
 void CapBody::createHinge(JointType jj,BodyType id1,BodyType id2,
@@ -629,7 +629,7 @@ void CapBody::createHinge(JointType jj,BodyType id1,BodyType id2,
                  dReal lo1,dReal hi1)
 {
   joints[jj] = dJointCreateHinge(world,0);
-  dJointAttach(joints[jj],bodies[id1],bodies[id2]);
+  dJointAttach(joints[jj],body_segments[id1],body_segments[id2]);
   dJointSetHingeParam(joints[jj],dParamCFM,INTERNALCFM);
 
   dVector3 dim1;
@@ -640,12 +640,12 @@ void CapBody::createHinge(JointType jj,BodyType id1,BodyType id2,
 
   dVector3 pp1;
   dVector3 pp2;
-  const dReal* pos2 = dBodyGetPosition(bodies[id2]);
+  const dReal* pos2 = dBodyGetPosition(body_segments[id2]);
 
-  dBodyGetRelPointPos(bodies[id1],px1*dim1[0]/2,py1*dim1[1]/2,pz1*dim1[2]/2,pp1);
-  dBodyGetRelPointPos(bodies[id2],px2*dim2[0]/2,py2*dim2[1]/2,pz2*dim2[2]/2,pp2);
+  dBodyGetRelPointPos(body_segments[id1],px1*dim1[0]/2,py1*dim1[1]/2,pz1*dim1[2]/2,pp1);
+  dBodyGetRelPointPos(body_segments[id2],px2*dim2[0]/2,py2*dim2[1]/2,pz2*dim2[2]/2,pp2);
 
-  dBodySetPosition(bodies[id2],
+  dBodySetPosition(body_segments[id2],
     pp1[0]-pp2[0]+pos2[0],
     pp1[1]-pp2[1]+pos2[1],
     pp1[2]-pp2[2]+pos2[2]);
@@ -657,7 +657,7 @@ void CapBody::createHinge(JointType jj,BodyType id1,BodyType id2,
   //dJointSetHingeParam(joints[jj],dParamFMax1,250);
 
   motors[jj] = dJointCreateAMotor(world,0);
-  dJointAttach(motors[jj],bodies[id1],bodies[id2]);
+  dJointAttach(motors[jj],body_segments[id1],body_segments[id2]);
   dJointSetAMotorMode(motors[jj], dAMotorUser);
   dJointSetAMotorNumAxes(motors[jj],1);
   // The motor is set with respect to the
@@ -667,14 +667,14 @@ void CapBody::createHinge(JointType jj,BodyType id1,BodyType id2,
   dJointSetAMotorParam(motors[jj],dParamFMax1,FMAX);
   dJointSetAMotorParam(motors[jj],dParamCFM1,1e-10);
 
-  jointInfo[jj].link[0].id=id1;
-  jointInfo[jj].link[1].id=id2;
+  joint_info[jj].link[0].id=id1;
+  joint_info[jj].link[1].id=id2;
 }
 
 
 void CapBody::bodyDims(BodyType id,dVector3 dims)
 {
-  dGeomID gg = dBodyGetFirstGeom( bodies[id] );
+  dGeomID gg = dBodyGetFirstGeom( body_segments[id] );
   int gType = dGeomGetClass(gg);
   switch(gType) {
     case dSphereClass: 
@@ -714,7 +714,7 @@ void CapBody::loadMarkToBodyMap(QString filename)
   QTextStream in(&file);
   for (int ii=0;((!in.atEnd())&&(ii<MARKER_COUNT));++ii) {
     in.skipWhiteSpace();
-    in >> markerToBody[ii].id;
+    in >> marker_to_body[ii].id;
     in.skipWhiteSpace();
   }
 }
@@ -727,7 +727,7 @@ void CapBody::loadMarkRelPosMap(QString filename)
   for (int ii=0;((!in.atEnd())&&(ii<MARKER_COUNT));++ii) {
     for (int jj=0;jj<3;++jj) {
       in.skipWhiteSpace();
-      in >> markerToBody[ii].pos[jj];
+      in >> marker_to_body[ii].position[jj];
       in.skipWhiteSpace();
     }
   }
@@ -740,14 +740,14 @@ void CapBody::loadBodyProperties(QString filename)
   QTextStream in(&file);
   dVector3 dim;
   for (int ii=0;((!in.atEnd())&&(ii<BODY_COUNT));++ii) {
-    in.skipWhiteSpace(); in >> partInfo[ii].classtype;
+    in.skipWhiteSpace(); in >> part_info[ii].classtype;
     in.skipWhiteSpace(); in >> dim[0];
     in.skipWhiteSpace(); in >> dim[1];
     in.skipWhiteSpace(); in >> dim[2];
-    in.skipWhiteSpace(); in >> partInfo[ii].qq[0];
-    in.skipWhiteSpace(); in >> partInfo[ii].qq[1];
-    in.skipWhiteSpace(); in >> partInfo[ii].qq[2];
-    in.skipWhiteSpace(); in >> partInfo[ii].qq[3];
+    in.skipWhiteSpace(); in >> part_info[ii].qq[0];
+    in.skipWhiteSpace(); in >> part_info[ii].qq[1];
+    in.skipWhiteSpace(); in >> part_info[ii].qq[2];
+    in.skipWhiteSpace(); in >> part_info[ii].qq[3];
     in.skipWhiteSpace();
 
     setBodyDim(ii,0,dim[0]);
@@ -766,17 +766,17 @@ void CapBody::loadJointAnchors(QString filename)
   BodyLink link;
 
   for (int ii=0;ii<BODY_COUNT;++ii) {
-    partInfo[ii].links.clear();
+    part_info[ii].links.clear();
   }
 
   for (int ii=0;!in.atEnd();++ii) {
     in.skipWhiteSpace(); in >> body;
     in.skipWhiteSpace(); in >> link.id;
-    in.skipWhiteSpace(); in >> link.pos[0];
-    in.skipWhiteSpace(); in >> link.pos[1];
-    in.skipWhiteSpace(); in >> link.pos[2];
+    in.skipWhiteSpace(); in >> link.position[0];
+    in.skipWhiteSpace(); in >> link.position[1];
+    in.skipWhiteSpace(); in >> link.position[2];
     in.skipWhiteSpace();
-    partInfo[body].links.push_back(link);
+    part_info[body].links.push_back(link);
   }
 }
 
@@ -786,7 +786,7 @@ void CapBody::saveMarkToBodyMap(QString filename)
   if (!file.open(QFile::WriteOnly | QIODevice::Truncate | QIODevice::Text)) return;
   QTextStream out(&file);
   for (int ii=0;ii<50;++ii) {
-    out << markerToBody[ii].id << "\n";
+    out << marker_to_body[ii].id << "\n";
   }
 }
 
@@ -797,11 +797,11 @@ void CapBody::saveMarkRelPosMap(QString filename,bool bodyID)
   QTextStream out(&file);
   for (int ii=0;ii<50;++ii) {
     if (bodyID) {
-      out << markerToBody[ii].id << " ";
+      out << marker_to_body[ii].id << " ";
     }
-    out << markerToBody[ii].pos[0] << " "
-        << markerToBody[ii].pos[1] << " "
-        << markerToBody[ii].pos[2] << "\n";
+    out << marker_to_body[ii].position[0] << " "
+        << marker_to_body[ii].position[1] << " "
+        << marker_to_body[ii].position[2] << "\n";
   }
 }
 
@@ -811,14 +811,14 @@ void CapBody::saveBodyProperties(QString filename)
   if (!file.open(QFile::WriteOnly | QIODevice::Truncate | QIODevice::Text)) return;
   QTextStream out(&file);
   for (int ii=0;ii<BODY_COUNT;++ii) {
-    out << partInfo[ii].classtype << " "
-        << partInfo[ii].dim[0] << " "
-        << partInfo[ii].dim[1] << " "
-        << partInfo[ii].dim[2] << " "
-        << partInfo[ii].qq[0] << " "
-        << partInfo[ii].qq[1] << " "
-        << partInfo[ii].qq[2] << " "
-        << partInfo[ii].qq[3] << "\n";
+    out << part_info[ii].classtype << " "
+        << part_info[ii].dimensions[0] << " "
+        << part_info[ii].dimensions[1] << " "
+        << part_info[ii].dimensions[2] << " "
+        << part_info[ii].qq[0] << " "
+        << part_info[ii].qq[1] << " "
+        << part_info[ii].qq[2] << " "
+        << part_info[ii].qq[3] << "\n";
   }
 }
 
@@ -830,12 +830,12 @@ void CapBody::saveFullBodyProperties(QString filename)
   for (int ii=0;ii<BODY_COUNT;++ii) {
 
     dVector3 dim;
-    int gType = dGeomGetClass(dBodyGetFirstGeom(bodies[ii]));
+    int gType = dGeomGetClass(dBodyGetFirstGeom(body_segments[ii]));
     bodyDims(BodyType(ii),dim);
-    const dReal* pos = dBodyGetPosition(bodies[ii]);
-    const dReal* qq = dBodyGetQuaternion(bodies[ii]);
-    const dReal* lv = dBodyGetLinearVel(bodies[ii]);
-    const dReal* av = dBodyGetAngularVel(bodies[ii]);
+    const dReal* pos = dBodyGetPosition(body_segments[ii]);
+    const dReal* qq = dBodyGetQuaternion(body_segments[ii]);
+    const dReal* lv = dBodyGetLinearVel(body_segments[ii]);
+    const dReal* av = dBodyGetAngularVel(body_segments[ii]);
 
     out << gType << " "
         << dim[0] << " " << dim[1] << " " << dim[2] << " "
@@ -855,8 +855,8 @@ void CapBody::saveJointProperties(QString filename)
   for (int ii=0;ii<JOINT_COUNT;++ii) {
     int jType = dJointGetType(joints[ii]);
     int bb[2];
-    bb[0] = jointInfo[ii].link[0].id;
-    bb[1] = jointInfo[ii].link[1].id;
+    bb[0] = joint_info[ii].link[0].id;
+    bb[1] = joint_info[ii].link[1].id;
     dVector3 lo={0};
     dVector3 hi={0};
     dVector3 fmax={0};
@@ -940,14 +940,14 @@ void CapBody::saveJointAnchors(QString filename)
   if (!file.open(QFile::WriteOnly | QIODevice::Truncate | QIODevice::Text)) return;
   QTextStream out(&file);
   for (int ii=0;ii<BODY_COUNT;++ii) {
-    for (QList<BodyLink>::iterator lit=partInfo[ii].links.begin();
-         lit!=partInfo[ii].links.end();++lit)
+    for (QList<BodyLink>::iterator lit=part_info[ii].links.begin();
+         lit!=part_info[ii].links.end();++lit)
     {
       out << ii << " "
           << lit->id << " "
-          << lit->pos[0] << " "
-          << lit->pos[1] << " "
-          << lit->pos[2] << "\n";
+          << lit->position[0] << " "
+          << lit->position[1] << " "
+          << lit->position[2] << "\n";
     }
 
   }
@@ -1084,7 +1084,7 @@ void CapBody::setLink(int bb,int jj,dVector3 pos)
   // of joint we are so that we can call the right
   // anchor function that will then do exactly the
   // same thing as the other anchor function setters.
-  if (dJointGetBody(joints[jj],0) == bodies[bb] ) {
+  if (dJointGetBody(joints[jj],0) == body_segments[bb] ) {
     switch (dJointGetType(joints[jj])) {
       case dJointTypeHinge:
         dJointSetHingeAnchor1Rel(joints[jj],px,py,pz);
@@ -1099,7 +1099,7 @@ void CapBody::setLink(int bb,int jj,dVector3 pos)
       break;
     }
 
-  } else if (dJointGetBody(joints[jj],1) == bodies[bb]) {
+  } else if (dJointGetBody(joints[jj],1) == body_segments[bb]) {
     switch (dJointGetType(joints[jj])) {
       case dJointTypeHinge:
         dJointSetHingeAnchor2Rel(joints[jj],px,py,pz);
@@ -1121,15 +1121,15 @@ void CapBody::setLink(int bb,int jj,dVector3 pos)
 
 void CapBody::setBodySpin(int bb,int ax,DSBoxWithParams* spin)
 {
-  partInfo[bb].spinBox[ax]=spin;
-  spin->setValue(partInfo[bb].dim[ax]);
+  part_info[bb].spin_box[ax]=spin;
+  spin->setValue(part_info[bb].dimensions[ax]);
   connect(spin,SIGNAL(valueChanged(int,int,double)),this,SLOT(setBodyDim(int,int,double)));
 }
 
 void CapBody::setBody(int ii)
 {
 
-  dGeomID gg = dBodyGetFirstGeom(bodies[ii]);
+  dGeomID gg = dBodyGetFirstGeom(body_segments[ii]);
 
   int gType = dGeomGetClass(gg);
   dMass mm;
@@ -1137,31 +1137,31 @@ void CapBody::setBody(int ii)
   switch(gType) {
     case dSphereClass:
     {
-      dReal radius = partInfo[ii].dim[0]/2;
+      dReal radius = part_info[ii].dimensions[0]/2;
       dGeomSphereSetRadius(gg,radius);
       dMassSetSphere(&mm,density,radius);
-      dBodySetMass(bodies[ii],&mm);
+      dBodySetMass(body_segments[ii],&mm);
     } break;
     case dCapsuleClass:
     {
-      dReal radius = partInfo[ii].dim[0]/2;
-      dReal length = partInfo[ii].dim[2]-partInfo[ii].dim[0];
+      dReal radius = part_info[ii].dimensions[0]/2;
+      dReal length = part_info[ii].dimensions[2]-part_info[ii].dimensions[0];
       dGeomCapsuleSetParams( gg ,radius,length );
       dMassSetCapsule(&mm,density,3,radius,length);
-      dBodySetMass(bodies[ii],&mm);
+      dBodySetMass(body_segments[ii],&mm);
 
     } break;
     case dBoxClass:
     {
       dGeomBoxSetLengths( gg,
-                         partInfo[ii].dim[0],
-                         partInfo[ii].dim[1],
-                         partInfo[ii].dim[2] );
+                         part_info[ii].dimensions[0],
+                         part_info[ii].dimensions[1],
+                         part_info[ii].dimensions[2] );
       dMassSetBox(&mm,density,
-                  partInfo[ii].dim[0],
-                  partInfo[ii].dim[1],
-                  partInfo[ii].dim[2] );
-      dBodySetMass(bodies[ii],&mm);
+                  part_info[ii].dimensions[0],
+                  part_info[ii].dimensions[1],
+                  part_info[ii].dimensions[2] );
+      dBodySetMass(body_segments[ii],&mm);
     } break;
     default:
     {
@@ -1170,11 +1170,11 @@ void CapBody::setBody(int ii)
   }
   // ***** Re-set joint anchors
 
-  if (keepRelAnchors) {
-    for (QList<BodyLink>::iterator lit=partInfo[ii].links.begin();
-         lit!=partInfo[ii].links.end();++lit)
+  if (keep_rel_anchors) {
+    for (QList<BodyLink>::iterator lit=part_info[ii].links.begin();
+         lit!=part_info[ii].links.end();++lit)
     {
-      setLink(ii,lit->id,lit->pos);
+      setLink(ii,lit->id,lit->position);
     }
   } else {
     // ***** find the new relative values
@@ -1187,8 +1187,8 @@ void CapBody::setBody(int ii)
   */
 void CapBody::getBody(int ii)
 {
-  bodyDims((BodyType)ii,partInfo[ii].dim);
-  partInfo[ii].classtype = dGeomGetClass(dBodyGetFirstGeom(bodies[ii]));
+  bodyDims((BodyType)ii,part_info[ii].dimensions);
+  part_info[ii].classtype = dGeomGetClass(dBodyGetFirstGeom(body_segments[ii]));
 
   // ***** We don't really have an easy way to
   // grab the default orientation of the body.
@@ -1216,9 +1216,9 @@ void CapBody::findMassProperties()
   // And the weighted sum of positions
   dMassSetZero(&m);
   for (int ii=0;ii<BODY_COUNT;++ii) {
-    dBodyGetMass(bodies[ii],&tmp);
-    rot = dBodyGetRotation(bodies[ii]);
-    pos = dBodyGetPosition(bodies[ii]);
+    dBodyGetMass(body_segments[ii],&tmp);
+    rot = dBodyGetRotation(body_segments[ii]);
+    pos = dBodyGetPosition(body_segments[ii]);
     dMassRotate(&tmp,rot);
     dMassTranslate(&tmp,pos[0],pos[1],pos[2]);
     dMassAdd(&m,&tmp);
@@ -1235,10 +1235,10 @@ void CapBody::findMassProperties()
   dVector3 amt;
   dVector3 relPos;
   for (int ii=0;ii<BODY_COUNT;++ii) {
-    dBodyGetMass(bodies[ii],&tmp);
-    lin = dBodyGetLinearVel(bodies[ii]);
-    ang = dBodyGetAngularVel(bodies[ii]);
-    pos = dBodyGetPosition(bodies[ii]);
+    dBodyGetMass(body_segments[ii],&tmp);
+    lin = dBodyGetLinearVel(body_segments[ii]);
+    ang = dBodyGetAngularVel(body_segments[ii]);
+    pos = dBodyGetPosition(body_segments[ii]);
 
     // Lin Momentum of body
     dOPC(mmt,*,lin,tmp.mass);
@@ -1284,19 +1284,19 @@ void CapBody::findMassProperties()
   // principal axes of the system.  That would
   // be useful for deciding if you're upright
 
-  dOPE(com,=,endPos);
-  dOPE(cLin,=,vFinal);
-  dOPE(cAng,=,aFinal);
+  dOPE(center_of_mass,=,endPos);
+  dOPE(senter_lin_vel,=,vFinal);
+  dOPE(center_ang_vel,=,aFinal);
 
 }
 
 void CapBody::saveState()
 {
   for (int ii=0;ii<BODY_COUNT;++ii) {
-    dBodyCopyPosition(bodies[ii],saved[ii].pos);
-    dBodyCopyQuaternion(bodies[ii],saved[ii].q);
-    dBodyCopyLinearVel(bodies[ii],saved[ii].lvel);
-    dBodyCopyAngularVel(bodies[ii],saved[ii].avel);
+    dBodyCopyPosition(body_segments[ii],saved[ii].position);
+    dBodyCopyQuaternion(body_segments[ii],saved[ii].orientation_quaternion);
+    dBodyCopyLinearVel(body_segments[ii],saved[ii].linear_velocity);
+    dBodyCopyAngularVel(body_segments[ii],saved[ii].angular_velocity);
   }
 }
 
@@ -1304,14 +1304,14 @@ void CapBody::restoreState()
 {
   dReal* src;
   for (int ii=0;ii<BODY_COUNT;++ii) {
-    src = saved[ii].pos;
-    dBodySetPosition(bodies[ii],src[0],src[1],src[2]);
-    src = saved[ii].q;
-    dBodySetQuaternion(bodies[ii],src);
-    src = saved[ii].lvel;
-    dBodySetLinearVel(bodies[ii],src[0],src[1],src[2]);
-    src = saved[ii].avel;
-    dBodySetAngularVel(bodies[ii],src[0],src[1],src[2]);
+    src = saved[ii].position;
+    dBodySetPosition(body_segments[ii],src[0],src[1],src[2]);
+    src = saved[ii].orientation_quaternion;
+    dBodySetQuaternion(body_segments[ii],src);
+    src = saved[ii].linear_velocity;
+    dBodySetLinearVel(body_segments[ii],src[0],src[1],src[2]);
+    src = saved[ii].angular_velocity;
+    dBodySetAngularVel(body_segments[ii],src[0],src[1],src[2]);
   }
 }
 
@@ -1354,11 +1354,11 @@ void CapBody::copyToSim()
   }
 
   for (int ii=0;ii<50;++ii) {
-    emit markMap(ii,markerToBody[ii].id);
+    emit markMap(ii,marker_to_body[ii].id);
     emit markPoint(ii,
-                   markerToBody[ii].pos[0],
-                   markerToBody[ii].pos[1],
-                   markerToBody[ii].pos[2]);
+                   marker_to_body[ii].position[0],
+                   marker_to_body[ii].position[1],
+                   marker_to_body[ii].position[2]);
 
   }
 }
@@ -1411,7 +1411,7 @@ void CapBody::updateControl()
       }
 
       currentVal = jointValue(ii,ax);
-      double targetVal = jointTarget[ii][ax]+jointOffset[ii][ax];
+      double targetVal = joint_target[ii][ax]+joint_offset[ii][ax];
       double jMax = jointMax(ii,ax)-.001;
       double jMin = jointMin(ii,ax)+.001;
       if (targetVal>jMax) targetVal=jMax;
@@ -1444,7 +1444,7 @@ void CapBody::setJointTarget(int jj,int ax, double val)
   double jMin = jointMin(jj,ax);
   if (val>jMax) val=jMax;
   if (val<jMin) val=jMin;
-  jointTarget[jj][ax]=val;
+  joint_target[jj][ax]=val;
 }
 
 void CapBody::setJointOffset(int jj,int ax, double val)
@@ -1453,7 +1453,7 @@ void CapBody::setJointOffset(int jj,int ax, double val)
   if (jj>=JOINT_COUNT) jj = JOINT_COUNT-1;
   if (ax<0) ax=0;
   if (ax>2) ax=2;
-  jointOffset[jj][ax]=val;
+  joint_offset[jj][ax]=val;
 }
 
 void CapBody::setJointForce(int jj,int ax,double val)
@@ -1484,7 +1484,7 @@ void CapBody::setJointForce(int jj,int ax,double val)
     default:
     break;
   }
-  controlLimit[jj][ax] = val;
+  control_limit[jj][ax] = val;
 
 }
 
@@ -1495,7 +1495,7 @@ double CapBody::forceValue(int jj,int ax)
 {
   double val=feedback[jj].gf[ax];;
 
-  if (globalForces) {
+  if (global_forces) {
     // Use global coordinates
     switch (dJointGetType(joints[jj])) {
     case dJointTypeLMotor:
@@ -1514,7 +1514,7 @@ void CapBody::applyJointForce(int jj,int ax,double val)
   dVector3 v={0};
   v[ax]=val;
 
-  if (globalForces) {
+  if (global_forces) {
     //Global forces -- directly apply the equal and opposite torques
     // in the global frame
     dBodyID b1,b2;
@@ -1548,11 +1548,11 @@ void CapBody::applyJointForce(int jj,int ax,double val)
 
 void CapBody::setBodyDim(int bb,int ax,double val)
 {
-  if (partInfo[bb].dim[ax]!=val) {
-    partInfo[bb].dim[ax]=val;
+  if (part_info[bb].dimensions[ax]!=val) {
+    part_info[bb].dimensions[ax]=val;
     setBody(bb);
-    if (partInfo[bb].spinBox[ax] && partInfo[bb].spinBox[ax]->value()!=val) {
-      partInfo[bb].spinBox[ax]->setValue(val);
+    if (part_info[bb].spin_box[ax] && part_info[bb].spin_box[ax]->value()!=val) {
+      part_info[bb].spin_box[ax]->setValue(val);
     }
   }
 }
@@ -1567,9 +1567,9 @@ void CapBody::bigHand(bool big)
   } else {
     radius = 0.055;
   }
-  dGeomSphereSetRadius(geoms[R_HAND_BODY],radius);
+  dGeomSphereSetRadius(geometries[R_HAND_BODY],radius);
   dMassSetSphere(&m,density,radius);
-  dBodySetMass(bodies[R_HAND_BODY],&m);
+  dBodySetMass(body_segments[R_HAND_BODY],&m);
 
 }
 
@@ -1754,12 +1754,12 @@ void CapBody::writeModel()
 
   // Write out the bodies and geometries
   for (int ii=0;ii<BODY_COUNT;++ii) {
-    pmap[bodies[ii] ] = ii;
+    pmap[body_segments[ii] ] = ii;
     dVector3 dim;
-    int gType = dGeomGetClass(dBodyGetFirstGeom(bodies[ii]));
+    int gType = dGeomGetClass(dBodyGetFirstGeom(body_segments[ii]));
     bodyDims(BodyType(ii),dim);
-    const dReal* pos = dBodyGetPosition(bodies[ii]);
-    const dReal* qq = dBodyGetQuaternion(bodies[ii]);
+    const dReal* pos = dBodyGetPosition(body_segments[ii]);
+    const dReal* qq = dBodyGetQuaternion(body_segments[ii]);
     //const dReal* lv = dBodyGetLinearVel(bodies[ii]);
     //const dReal* av = dBodyGetAngularVel(bodies[ii]);
     bodyQ.bindValue(":pk",ii);
@@ -1872,10 +1872,10 @@ void CapBody::writeMarkers()
   markQ.bindValue(":erp",0.2);
   for (int ii=0;ii<50;++ii) {
     markQ.bindValue(":pk",ii);
-    markQ.bindValue(":body",markerToBody[ii].id);
-    markQ.bindValue(":px",markerToBody[ii].pos[0]);
-    markQ.bindValue(":py",markerToBody[ii].pos[1]);
-    markQ.bindValue(":pz",markerToBody[ii].pos[2]);
+    markQ.bindValue(":body",marker_to_body[ii].id);
+    markQ.bindValue(":px",marker_to_body[ii].position[0]);
+    markQ.bindValue(":py",marker_to_body[ii].position[1]);
+    markQ.bindValue(":pz",marker_to_body[ii].position[2]);
     markQ.exec();
   }
 }
@@ -1884,37 +1884,37 @@ void CapBody::writeMarkers()
 void CapBody::saveTempState()
 {
   for (int ii=0;ii<BODY_COUNT;++ii) {
-    dBodyCopyPosition(bodies[ii],tempState[ii].pos);
-    dBodyCopyQuaternion(bodies[ii],tempState[ii].q);
-    dBodyCopyLinearVel(bodies[ii],tempState[ii].lvel);
-    dBodyCopyAngularVel(bodies[ii],tempState[ii].avel);
+    dBodyCopyPosition(body_segments[ii],temp_state[ii].position);
+    dBodyCopyQuaternion(body_segments[ii],temp_state[ii].orientation_quaternion);
+    dBodyCopyLinearVel(body_segments[ii],temp_state[ii].linear_velocity);
+    dBodyCopyAngularVel(body_segments[ii],temp_state[ii].angular_velocity);
   }
 }
 
 void CapBody::restoreTempState()
 {
   for (int ii=0;ii<BODY_COUNT;++ii) {
-    dBodySetPosition(bodies[ii],
-                     tempState[ii].pos[0],
-                     tempState[ii].pos[1],
-                     tempState[ii].pos[2]);
-    dBodySetQuaternion(bodies[ii],tempState[ii].q);
-    dBodySetLinearVel(bodies[ii],
-                      tempState[ii].lvel[0],
-                      tempState[ii].lvel[1],
-                      tempState[ii].lvel[2]);
-    dBodySetAngularVel(bodies[ii],
-                       tempState[ii].avel[0],
-                       tempState[ii].avel[1],
-                       tempState[ii].avel[2]);
+    dBodySetPosition(body_segments[ii],
+                     temp_state[ii].position[0],
+                     temp_state[ii].position[1],
+                     temp_state[ii].position[2]);
+    dBodySetQuaternion(body_segments[ii],temp_state[ii].orientation_quaternion);
+    dBodySetLinearVel(body_segments[ii],
+                      temp_state[ii].linear_velocity[0],
+                      temp_state[ii].linear_velocity[1],
+                      temp_state[ii].linear_velocity[2]);
+    dBodySetAngularVel(body_segments[ii],
+                       temp_state[ii].angular_velocity[0],
+                       temp_state[ii].angular_velocity[1],
+                       temp_state[ii].angular_velocity[2]);
   }
 }
 
 void CapBody::zeroAccumulators()
 {
   for (int ii=0;ii<BODY_COUNT;++ii) {
-    dBodySetForce(bodies[ii],0,0,0);
-    dBodySetTorque(bodies[ii],0,0,0);
+    dBodySetForce(body_segments[ii],0,0,0);
+    dBodySetTorque(body_segments[ii],0,0,0);
   }
 }
 
@@ -1956,26 +1956,26 @@ void CapBody::restoreControl()
   for (int jj=0;jj<JOINT_COUNT;++jj) {
     switch (dJointGetType(joints[jj])) {
       case dJointTypeHinge:
-        dJointSetAMotorParam(motors[jj],dParamFMax1,controlLimit[jj][0]);
+        dJointSetAMotorParam(motors[jj],dParamFMax1,control_limit[jj][0]);
       break;
       case dJointTypeUniversal:
-        dJointSetAMotorParam(motors[jj],dParamFMax1,controlLimit[jj][0]);
-        dJointSetAMotorParam(motors[jj],dParamFMax2,controlLimit[jj][1]);
+        dJointSetAMotorParam(motors[jj],dParamFMax1,control_limit[jj][0]);
+        dJointSetAMotorParam(motors[jj],dParamFMax2,control_limit[jj][1]);
       break;
       case dJointTypeBall:
-        dJointSetAMotorParam(motors[jj],dParamFMax1,controlLimit[jj][0]);
-        dJointSetAMotorParam(motors[jj],dParamFMax2,controlLimit[jj][1]);
-        dJointSetAMotorParam(motors[jj],dParamFMax3,controlLimit[jj][2]);
+        dJointSetAMotorParam(motors[jj],dParamFMax1,control_limit[jj][0]);
+        dJointSetAMotorParam(motors[jj],dParamFMax2,control_limit[jj][1]);
+        dJointSetAMotorParam(motors[jj],dParamFMax3,control_limit[jj][2]);
       break;
       case dJointTypeLMotor: {
-        dJointSetLMotorParam(motors[jj],dParamFMax1,controlLimit[jj][0]);
-        dJointSetLMotorParam(motors[jj],dParamFMax2,controlLimit[jj][1]);
-        dJointSetLMotorParam(motors[jj],dParamFMax3,controlLimit[jj][2]);
+        dJointSetLMotorParam(motors[jj],dParamFMax1,control_limit[jj][0]);
+        dJointSetLMotorParam(motors[jj],dParamFMax2,control_limit[jj][1]);
+        dJointSetLMotorParam(motors[jj],dParamFMax3,control_limit[jj][2]);
       } break;
       case dJointTypeAMotor: {
-        dJointSetAMotorParam(motors[jj],dParamFMax1,controlLimit[jj][0]);
-        dJointSetAMotorParam(motors[jj],dParamFMax2,controlLimit[jj][1]);
-        dJointSetAMotorParam(motors[jj],dParamFMax3,controlLimit[jj][2]);
+        dJointSetAMotorParam(motors[jj],dParamFMax1,control_limit[jj][0]);
+        dJointSetAMotorParam(motors[jj],dParamFMax2,control_limit[jj][1]);
+        dJointSetAMotorParam(motors[jj],dParamFMax3,control_limit[jj][2]);
       } break;
       default:
       break;
