@@ -14,6 +14,8 @@ computations to be included in a virtual reality simulation.
 
 ## Setup notes
 
+To begin using this code base, first install the ODE patch as described in the ode direcory's README and in the ODE setup wiki page. Then build and run in QtCreator, see the QtCreator wiki page for details.
+
 ### Linux
 
 On Linux, QtVR is configured by default to load ODE from the `./ode` subtree
