@@ -9,80 +9,85 @@ QT += core gui opengl sql widgets
 TARGET = QtVR
 TEMPLATE = app
 
-SOURCES += main.cpp\
-        mainwindow.cpp \
-    myglwidget.cpp \
-    quatcamera.cpp \
-    markerwidget.cpp \
-    simworld.cpp \
-    CapBody.cpp \
-    jointwidget.cpp \
-    bodysizeform.cpp \
-    markerdata.cpp \
-    c3ddata.cpp \
-    jointdataframe.cpp \
-    markerdataframe.cpp \
-    mygraphicsscene.cpp \
-    sequence.cpp \
-    colorlabel.cpp \
-    plotform.cpp \
-    markertab.cpp \
-    plottab.cpp \
-    sequencetab.cpp \
-    sequenceform.cpp \
-    boarddata.cpp \
-    PokeDataFrame.cpp \
-    pokemarkerdata.cpp \
-    boardmarkerdata.cpp \
-    dsboxwithparams.cpp \
-    swingdata.cpp \
-    livemarkerdata.cpp \
-    experimentscript.cpp \
-    scriptbase.cpp \
-    testscript.cpp
+SOURCES += \
+    src/main.cpp\
+    src/mainwindow.cpp \
+    src/myglwidget.cpp \
+    src/quatcamera.cpp \
+    src/markerwidget.cpp \
+    src/simworld.cpp \
+    src/CapBody.cpp \
+    src/jointwidget.cpp \
+    src/bodysizeform.cpp \
+    src/markerdata.cpp \
+    src/c3ddata.cpp \
+    src/jointdataframe.cpp \
+    src/markerdataframe.cpp \
+    src/mygraphicsscene.cpp \
+    src/sequence.cpp \
+    src/colorlabel.cpp \
+    src/plotform.cpp \
+    src/markertab.cpp \
+    src/plottab.cpp \
+    src/sequencetab.cpp \
+    src/sequenceform.cpp \
+    src/boarddata.cpp \
+    src/PokeDataFrame.cpp \
+    src/pokemarkerdata.cpp \
+    src/boardmarkerdata.cpp \
+    src/dsboxwithparams.cpp \
+    src/swingdata.cpp \
+    src/livemarkerdata.cpp \
+    src/experimentscript.cpp \
+    src/scriptbase.cpp \
+    src/testscript.cpp
 
-HEADERS  += mainwindow.h \
-    myglwidget.h \
-    quatcamera.h \
-    markerwidget.h \
-    simworld.h \
-    CapBody.h \
-    jointwidget.h \
-    bodysizeform.h \
-    markerdata.h \
-    c3ddata.h \
-    jointdataframe.h \
-    markerdataframe.h \
-    DataCValues.h \
-    mygraphicsscene.h \
-    sequence.h \
-    colorlabel.h \
-    plotform.h \
-    markertab.h \
-    plottab.h \
-    sequencetab.h \
-    sequenceform.h \
-    boarddata.h \
-    PokeDataFrame.h \
-    pokemarkerdata.h \
-    boardmarkerdata.h \
-    dsboxwithparams.h \
-    swingdata.h \
-    livemarkerdata.h \
-    experimentscript.h \
-    scriptbase.h \
-    testscript.h
+HEADERS += \
+    include/mainwindow.h \
+    include/myglwidget.h \
+    include/quatcamera.h \
+    include/markerwidget.h \
+    include/simworld.h \
+    include/CapBody.h \
+    include/jointwidget.h \
+    include/bodysizeform.h \
+    include/markerdata.h \
+    include/c3ddata.h \
+    include/jointdataframe.h \
+    include/markerdataframe.h \
+    include/DataCValues.h \
+    include/mygraphicsscene.h \
+    include/sequence.h \
+    include/colorlabel.h \
+    include/plotform.h \
+    include/markertab.h \
+    include/plottab.h \
+    include/sequencetab.h \
+    include/sequenceform.h \
+    include/boarddata.h \
+    include/PokeDataFrame.h \
+    include/pokemarkerdata.h \
+    include/boardmarkerdata.h \
+    include/dsboxwithparams.h \
+    include/swingdata.h \
+    include/livemarkerdata.h \
+    include/experimentscript.h \
+    include/scriptbase.h \
+    include/testscript.h
 
-FORMS    += mainwindow.ui \
-    markerwidget.ui \
-    jointwidget.ui \
-    bodysizeform.ui \
-    plotform.ui \
-    sequenceform.ui \
-    newSequenceDialog.ui
+FORMS += \
+    ui/mainwindow.ui \
+    ui/markerwidget.ui \
+    ui/jointwidget.ui \
+    ui/bodysizeform.ui \
+    ui/plotform.ui \
+    ui/sequenceform.ui \
+    ui/newSequenceDialog.ui
 
 RESOURCES += \
     resources.qrc
+
+INCLUDEPATH += ./include
 
 # We use ODE with double precision
 DEFINES += dDOUBLE
