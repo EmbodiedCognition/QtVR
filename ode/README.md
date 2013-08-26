@@ -16,7 +16,7 @@ changed URLs around r1904, so you might need to use something like this:
 Then, apply the patch to your checked-out copy of ODE:
 
     cd opende
-    patch -p0 < ../skelette/ode/ode-r1939.patch
+    patch -p0 < ../QtVR/ode/ode-r1939.patch
 
 Generate the configuration scripts, configure, make, and make install:
 
