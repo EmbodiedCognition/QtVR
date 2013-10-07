@@ -68,6 +68,17 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->controlTabWidget->addTab(new MarkerTab,"Markers");
     ui->controlTabWidget->addTab(new PlotTab,"Plots");
 
+
+    SimWorld* world = ui->glWidget->getWorld();
+    CapBody* capBody = world->getBody();
+#if defined( BOARD_DATA )
+    BoardMarkerData* md = ui->glWidget->getWorld()->getMarkerData();
+#elif defined( POKE_DATA )
+    PokeMarkerData* md = ui->glWidget->getWorld()->getMarkerData();
+#else
+    MarkerData* md = world->getMarkerData();
+#endif
+
     // Markers widget
     QDockWidget* dw = new QDockWidget("Markers",this);
 
@@ -76,8 +87,8 @@ MainWindow::MainWindow(QWidget *parent) :
     QWidget* wid = new QWidget;
     layout = new QVBoxLayout;
     layout->setContentsMargins(0,0,0,0);
-    markerWidgetArray = new MarkerWidget*[MARKER_COUNT];
-    for (int ii=0;ii<MARKER_COUNT;++ii) {
+    markerWidgetArray = new MarkerWidget*[md->marker_count];
+    for (int ii=0;ii<md->marker_count;++ii) {
       markerWidgetArray[ii] = new MarkerWidget(ii,0);
       layout->addWidget(markerWidgetArray[ii]);
     }
@@ -95,8 +106,6 @@ MainWindow::MainWindow(QWidget *parent) :
     wid = new QWidget;
     layout = new QVBoxLayout;
     layout->setContentsMargins(0,0,0,0);
-    SimWorld* world = ui->glWidget->getWorld();
-    CapBody* capBody = world->getBody();
 
     QHBoxLayout* innerLayout = new QHBoxLayout;
     QPushButton* zeroButton = new QPushButton("Zero");
@@ -268,13 +277,7 @@ MainWindow::MainWindow(QWidget *parent) :
     //SwingData* md = ui->glWidget->getWorld()->getMarkerData();
     //LiveMarkerData* md = ui->glWidget->getWorld()->getMarkerData();
 
-#if defined( BOARD_DATA )
-    BoardMarkerData* md = ui->glWidget->getWorld()->getMarkerData();
-#elif defined( POKE_DATA )
-    PokeMarkerData* md = ui->glWidget->getWorld()->getMarkerData();
-#else
-    MarkerData* md = ui->glWidget->getWorld()->getMarkerData();
-#endif
+
 
     //connect(ui->stepDataButton,SIGNAL(clicked()),md,SLOT(setSingleStep()));
     //connect(ui->playPauseDataButton,SIGNAL(toggled(bool)),md,SLOT(setPaused(bool)));
@@ -284,7 +287,7 @@ MainWindow::MainWindow(QWidget *parent) :
             this,SLOT(setMarkPoint(int,double,double,double)));
 
     /* */
-    for (int ii=0;ii<MARKER_COUNT;++ii) {
+    for (int ii=0;ii<41;++ii) {
       connect(markerWidgetArray[ii],SIGNAL(markBodySet(int,int)),md,SLOT(changeBodyConnect(int,int)));
       connect(markerWidgetArray[ii],SIGNAL(markConnect(int,bool)),md,SLOT(changeBodyLink(int,bool)));
       connect(markerWidgetArray[ii],SIGNAL(markPosSet(int,double,double,double)),
@@ -292,7 +295,7 @@ MainWindow::MainWindow(QWidget *parent) :
       connect(markerWidgetArray[ii],SIGNAL(markGrab(int)),this, SLOT(grabMarkPos(int)));
     }
 
-    ui->graphicsView->setScene(ui->glWidget->getGraphicsScene());
+    //ui->graphicsView->setScene(ui->glWidget->getGraphicsScene());
     //ui->graphicsView->setSceneRect(-1,4,510,8);
     //ui->graphicsView->scale(1,20);
 

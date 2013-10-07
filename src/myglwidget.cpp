@@ -1196,12 +1196,13 @@ void MyGLWidget::renderSimWorld(SimWorld* world)
     const dReal* mPos;
     dVector3 mappedPoint;
     const dReal* rPos;
-    for (int ii=0;ii<MARKER_COUNT;++ii) {
+    int mCount = md->marker_count;
+    for (int ii=0;ii<mCount;++ii) {
       rPos = cb->marker_to_body[ii].position;
       mPos = dBodyGetPosition(md->body[ii]);
       //if (mPos[2]<=0) continue;
       int id = cb->marker_to_body[ii].id;
-      if (id>=0 && id<=50) {
+      if (id>=0 && id<=mCount) {
         dBodyGetRelPointPos(cb->body_segments[id],
                           rPos[0],rPos[1],rPos[2],mappedPoint);
         if (mPos[2]>0) {
@@ -1412,9 +1413,9 @@ void MyGLWidget::renderScene()
   glPushMatrix();
   glColor3f(1,1,1);
 
-  double mat[16];
+  float mat[16];
   camera.getCMajorInvTrans(mat);
-  glMultMatrixd(mat);
+  glMultMatrixf(mat);
 
   glLightfv(GL_LIGHT0, GL_POSITION, light_pos);    // Set light position
 
@@ -1472,15 +1473,15 @@ void MyGLWidget::renderScene()
 void MyGLWidget::initializeGraphicsScene()
 {
   //scene.addLine(0,3.14,0,-3.14,QPen(Qt::black));
-  scene.setAxis(500,10,100);
+//  scene.setAxis(500,10,100);
 
-  for (int ii=0;ii<11;++ii) {
-    graphics_path_item[ii]=new QGraphicsPathItem(0,&scene);
-    graphics_path_item[ii]->setPen(QPen(QColor(rand()%250,rand()%250,rand()%250)));
+//  for (int ii=0;ii<11;++ii) {
+//    graphics_path_item[ii]=new QGraphicsPathItem(0,&scene);
+//    graphics_path_item[ii]->setPen(QPen(QColor(rand()%250,rand()%250,rand()%250)));
 
-    text_item[ii]=new QGraphicsTextItem(0,&scene);
-    text_item[ii]->setFont(QFont(QString("Helvetica"),20));
-  }
+//    text_item[ii]=new QGraphicsTextItem(0,&scene);
+//    text_item[ii]->setFont(QFont(QString("Helvetica"),20));
+//  }
 
 
 }

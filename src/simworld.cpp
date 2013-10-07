@@ -69,6 +69,7 @@ SimWorld::SimWorld(QObject *parent) :
   marker_data = new MarkerData(world,marker_space,this);
 #endif
   marker_data->body_pointer=body;
+  body->changeMarkLinks(marker_data->marker_count);
   std::cout << "marker_data created/loaded" <<  std::endl;
 #if defined( BOARD_DATA )
   board0 = dCreateBox(space,.5,.5,.05);
@@ -645,7 +646,8 @@ void SimWorld::anglesToFile(QString filename)
 void SimWorld::writeVMarkerFrame(int cc,int tri,FILE* file)
 {
   fprintf(file,"%d %d ",cc,tri);
-  for (int ii=0;ii<MARKER_COUNT;++ii) {
+  int markCnt = (int)body->marker_to_body.size();
+  for (int ii=0;ii<markCnt;++ii) {
     dVector4 pt;
     if (body->marker_to_body[ii].id>=0) {
       // Find the global coordinate of the
@@ -680,7 +682,8 @@ void SimWorld::writeVMarkerFrame(int cc,int tri,FILE* file)
 void SimWorld::writeAngleFrame(int cc,int tri,FILE* file)
 {
   fprintf(file,"%d %d ",cc,tri);
-  for (int ii=0;ii<MARKER_COUNT;++ii) {
+  int markCnt = (int)body->marker_to_body.size();
+  for (int ii=0;ii<markCnt;++ii) {
     dVector4 pt;
     if (body->marker_to_body[ii].id>=0) {
       // Find the global coordinate of the

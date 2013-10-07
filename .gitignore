@@ -9,3 +9,6 @@ QtVR.pro.user
 # ignore whatever is under ./ode/{lib,include}
 ode/lib
 ode/include
+
+# ignore .txt output files
+totals.txt

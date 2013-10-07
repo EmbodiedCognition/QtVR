@@ -134,8 +134,8 @@ void Sequence::fillPath(QPainterPath* path,int t0,int t1,int row_index,int colum
 
 void Sequence::createPaths(DataFrame* frame)
 {
-  int row = row_count = frame->rows();
-  int column = column_count = frame->cols();
+  //int row = row_count = frame->rows();
+  //int column = column_count = frame->cols();
 
   paths = new QPainterPath[frame->rows()*frame->cols()];
   for (int ii=0;ii<row_count;++ii) {

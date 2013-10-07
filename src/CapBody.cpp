@@ -709,10 +709,11 @@ void CapBody::bodyDims(BodyType id,dVector3 dims)
 
 void CapBody::loadMarkToBodyMap(QString filename)
 {
+  int markCnt = (int)marker_to_body.size();
   QFile file(filename);
   if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) return;
   QTextStream in(&file);
-  for (int ii=0;((!in.atEnd())&&(ii<MARKER_COUNT));++ii) {
+  for (int ii=0;((!in.atEnd())&&(ii<markCnt));++ii) {
     in.skipWhiteSpace();
     in >> marker_to_body[ii].id;
     in.skipWhiteSpace();
@@ -721,10 +722,11 @@ void CapBody::loadMarkToBodyMap(QString filename)
 
 void CapBody::loadMarkRelPosMap(QString filename)
 {
+  int markCnt = (int)marker_to_body.size();
   QFile file(filename);
   if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) return;
   QTextStream in(&file);
-  for (int ii=0;((!in.atEnd())&&(ii<MARKER_COUNT));++ii) {
+  for (int ii=0;((!in.atEnd())&&(ii<markCnt));++ii) {
     for (int jj=0;jj<3;++jj) {
       in.skipWhiteSpace();
       in >> marker_to_body[ii].position[jj];
@@ -1352,8 +1354,9 @@ void CapBody::copyToSim()
   for (int ii=0;ii<BODY_COUNT;++ii) {
     setBody(ii);
   }
+  int markCnt =(int) marker_to_body.size();
 
-  for (int ii=0;ii<50;++ii) {
+  for (int ii=0;ii<markCnt;++ii) {
     emit markMap(ii,marker_to_body[ii].id);
     emit markPoint(ii,
                    marker_to_body[ii].position[0],
@@ -1432,6 +1435,12 @@ void CapBody::updateControl()
     }
   }
 
+}
+
+void CapBody::changeMarkLinks(int numMarkers)
+{
+  if (numMarkers<0) numMarkers=0;
+  marker_to_body.resize(numMarkers);
 }
 
 void CapBody::setJointTarget(int jj,int ax, double val)
@@ -1870,7 +1879,8 @@ void CapBody::writeMarkers()
   markQ.bindValue(":label","");
   markQ.bindValue(":cfm",1e-3);
   markQ.bindValue(":erp",0.2);
-  for (int ii=0;ii<50;++ii) {
+  int markCnt = (int)marker_to_body.size();
+  for (int ii=0;ii<markCnt;++ii) {
     markQ.bindValue(":pk",ii);
     markQ.bindValue(":body",marker_to_body[ii].id);
     markQ.bindValue(":px",marker_to_body[ii].position[0]);

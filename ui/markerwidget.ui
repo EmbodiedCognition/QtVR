@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>321</width>
+    <width>333</width>
     <height>24</height>
    </rect>
   </property>
@@ -143,11 +143,6 @@
      </item>
      <item>
       <property name="text">
-       <string>R. Tarsal</string>
-      </property>
-     </item>
-     <item>
-      <property name="text">
        <string>R. Toe</string>
       </property>
      </item>
@@ -164,11 +159,6 @@
      <item>
       <property name="text">
        <string>L. Heel</string>
-      </property>
-     </item>
-     <item>
-      <property name="text">
-       <string>L. Tarsal</string>
       </property>
      </item>
      <item>

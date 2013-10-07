@@ -29,7 +29,7 @@
 #include <GL/glu.h>
 #include <QTimer>
 //#include <QGraphicsScene>
-#include "mygraphicsscene.h"
+//#include "mygraphicsscene.h"
 #include "quatcamera.h"
 #include <ode/ode.h>
 
@@ -50,7 +50,7 @@ public:
 #if defined( BOARD_DATA )
   void setBoardData(BoardData* dat) {bd = dat;}
 #endif
-  QGraphicsScene* getGraphicsScene() { return &scene; }
+  //QGraphicsScene* getGraphicsScene() { return &scene; }
 signals:
 
 public slots:
@@ -140,7 +140,7 @@ public:
   BoardData* bd;
 #endif
   //QGraphicsScene scene;
-  MyGraphicsScene scene;
+  //MyGraphicsScene scene;
   QuatCamera camera;
   static float light_pos[4];
   static float light_ambient[4];
@@ -153,8 +153,8 @@ public:
 
   //QGraphicsLineItem* sceneItem[500];
 
-  QGraphicsPathItem* graphics_path_item[11];
-  QGraphicsTextItem* text_item[11];
+  //QGraphicsPathItem* graphics_path_item[11];
+  //QGraphicsTextItem* text_item[11];
 
   bool draw_lines;
   bool follow_camera;

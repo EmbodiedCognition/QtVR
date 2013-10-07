@@ -29,15 +29,9 @@
 #include <ode/ode.h>
 #include "c3ddata.h"
 
-/* Boost headers are for sampling from
-   a Gaussian distribution to perturb marker
-   positions
- */
-#include <boost/random/mersenne_twister.hpp>
-#include <boost/random/normal_distribution.hpp>
-#include <boost/random/variate_generator.hpp>
 
 
+class GaussRand;
 class CapBody;
 
 /**
@@ -52,6 +46,7 @@ class MarkerData : public QObject
     Q_OBJECT
 public:
     explicit MarkerData(dWorldID world,dSpaceID space,QObject *parent = 0);
+  virtual ~MarkerData();
 
 
 
@@ -139,10 +134,7 @@ public:
   bool use_virtual_markers; ///< Should we draw marker data from the virtual source?
 
 
-  /* Random number generator objects for Gaussian samples. */
-  boost::mt19937 rng;
-  boost::normal_distribution<double> norm;
-  boost::variate_generator<boost::mt19937&,boost::normal_distribution<double> > randN;
+  GaussRand* grand;
 
 };
 

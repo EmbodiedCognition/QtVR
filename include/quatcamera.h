@@ -56,15 +56,15 @@ public:
   void getTransform(QMatrix4x4& mat);
   void getInvTransform(QMatrix4x4& mat);
 
-  void getRMajorTrans(double* m);
-  void getCMajorTrans(double* m);
-  void getRMajorInvTrans(double* m);
-  void getCMajorInvTrans(double* m);
+  void getRMajorTrans(float* m);
+  void getCMajorTrans(float* m);
+  void getRMajorInvTrans(float* m);
+  void getCMajorInvTrans(float* m);
 
   /// Store quaternion Q in matrix m[16]
   /// If m is a column matrix, this
   /// will store the inverse rotation.
-  void quatToRowMajorMat(const QQuaternion& q,double* m);
+  void quatToRowMajorMat(const QQuaternion& q,float* m);
 
 
   void reset();

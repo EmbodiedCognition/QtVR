@@ -85,7 +85,7 @@ void QuatCamera::getInvTransform(QMatrix4x4& mat)
   Put the forward transform into m[16]
   as a row-major matrix.
   */
-void QuatCamera::getRMajorTrans(double* m)
+void QuatCamera::getRMajorTrans(float* m)
 {
   quatToRowMajorMat(orient,m);
   // The forward transform simply puts
@@ -95,7 +95,7 @@ void QuatCamera::getRMajorTrans(double* m)
   m[11]= position.z();
 }
 
-void QuatCamera::getCMajorTrans(double* m)
+void QuatCamera::getCMajorTrans(float* m)
 {
   // Using the conjugate produces
   // the transpose representation
@@ -107,7 +107,7 @@ void QuatCamera::getCMajorTrans(double* m)
   m[14] = position.z();
 }
 
-void QuatCamera::getRMajorInvTrans(double* m)
+void QuatCamera::getRMajorInvTrans(float* m)
 {
   quatToRowMajorMat(orient.conjugate(),m);
   // When we invert the transform,
@@ -121,7 +121,7 @@ void QuatCamera::getRMajorInvTrans(double* m)
 
 }
 
-void QuatCamera::getCMajorInvTrans(double* m)
+void QuatCamera::getCMajorInvTrans(float* m)
 {
   // To invert, we'd normally take the conjugate,
   // instead, we'll just use the transpose
@@ -134,7 +134,7 @@ void QuatCamera::getCMajorInvTrans(double* m)
   m[14] = -pos.z();
 }
 
-void QuatCamera::quatToRowMajorMat(const QQuaternion& q,double* m)
+void QuatCamera::quatToRowMajorMat(const QQuaternion& q, float* m)
 {
   // Column 1 would be: q*x*q^-1
   // That's [w x y z]*[0 1 0 0]*[w -x -y -z]

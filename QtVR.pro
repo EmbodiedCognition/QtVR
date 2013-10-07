@@ -4,7 +4,8 @@
 #
 #-------------------------------------------------
 
-QT += core gui opengl sql widgets
+QT += core gui opengl sql
+greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
 TARGET = QtVR
 TEMPLATE = app
@@ -23,7 +24,6 @@ SOURCES += \
     src/c3ddata.cpp \
     src/jointdataframe.cpp \
     src/markerdataframe.cpp \
-    src/mygraphicsscene.cpp \
     src/sequence.cpp \
     src/colorlabel.cpp \
     src/plotform.cpp \
@@ -56,7 +56,6 @@ HEADERS += \
     include/jointdataframe.h \
     include/markerdataframe.h \
     include/DataCValues.h \
-    include/mygraphicsscene.h \
     include/sequence.h \
     include/colorlabel.h \
     include/plotform.h \
@@ -73,7 +72,8 @@ HEADERS += \
     include/livemarkerdata.h \
     include/experimentscript.h \
     include/scriptbase.h \
-    include/testscript.h
+    include/testscript.h \
+    include/gaussrand.h
 
 FORMS += \
     ui/mainwindow.ui \
@@ -99,18 +99,18 @@ win32:DEFINES += _CRT_SECURE_NO_WARNINGS
 # simultaneously, we'll need BoardData instead of MarkerData
 #DEFINES += BOARD_DATA
 
-#Set how many markers to expect
-DEFINES += MARKER_COUNT=50
-
 # Telling QT where the ODE code source is allows the creator
 # to provide more code completion and source help
-win32:INCLUDEPATH += C:/Code/ode_lab/include
+win32:INCLUDEPATH += ../ode/include
 
 # Point to Boost library for the random number generator
-win32:INCLUDEPATH += C:/Code/boost_1_46_1
+win32:INCLUDEPATH += $$(BOOST_ROOT)
 
 # Link the lab-specific copy of ODE
-win32:LIBS += C:/Code/ode_lab/lib/ReleaseDoubleLib/ode_double.lib
+win32 {
+  debug:LIBS += ../ode/lib/DebugDoubleLib/ode_doubled.lib
+  else:LIBS += ../ode/lib/ReleaseDoubleLib/ode_double.lib
+}
 
 # This linker flag is for MSVC.  It makes the stack larger.
 # This might not be necessary any more, but old versions of
