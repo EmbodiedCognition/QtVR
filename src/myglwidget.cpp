@@ -1409,13 +1409,12 @@ void MyGLWidget::renderScene()
 {
   glClear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
-  static unsigned int ff = 0;
   glPushMatrix();
   glColor3f(1,1,1);
 
-  float mat[16];
+  double mat[16];
   camera.getCMajorInvTrans(mat);
-  glMultMatrixf(mat);
+  glMultMatrixd(mat);
 
   glLightfv(GL_LIGHT0, GL_POSITION, light_pos);    // Set light position
 

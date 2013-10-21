@@ -28,8 +28,6 @@
 #include <QGLWidget>
 #include <GL/glu.h>
 #include <QTimer>
-//#include <QGraphicsScene>
-//#include "mygraphicsscene.h"
 #include "quatcamera.h"
 #include <ode/ode.h>
 
@@ -50,7 +48,6 @@ public:
 #if defined( BOARD_DATA )
   void setBoardData(BoardData* dat) {bd = dat;}
 #endif
-  //QGraphicsScene* getGraphicsScene() { return &scene; }
 signals:
 
 public slots:
@@ -58,8 +55,6 @@ public slots:
   void setShowMarkers(bool);
   void setFollowCamera(bool);
   void setBodyAlpha(double);
-  //void setAnimationRate(double);
-
   void animate();
 
 protected:
@@ -139,8 +134,6 @@ public:
 #if defined( BOARD_DATA )
   BoardData* bd;
 #endif
-  //QGraphicsScene scene;
-  //MyGraphicsScene scene;
   QuatCamera camera;
   static float light_pos[4];
   static float light_ambient[4];
@@ -151,11 +144,6 @@ public:
   GLuint front_list;
   GLuint shadow_list;
 
-  //QGraphicsLineItem* sceneItem[500];
-
-  //QGraphicsPathItem* graphics_path_item[11];
-  //QGraphicsTextItem* text_item[11];
-
   bool draw_lines;
   bool follow_camera;
   bool show_markers;
@@ -163,9 +151,6 @@ public:
   QVector3D offset;
 
   double body_alpha;
-
-
-
 };
 
 #endif // MYGLWIDGET_H

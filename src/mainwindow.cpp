@@ -87,8 +87,10 @@ MainWindow::MainWindow(QWidget *parent) :
     QWidget* wid = new QWidget;
     layout = new QVBoxLayout;
     layout->setContentsMargins(0,0,0,0);
-    markerWidgetArray = new MarkerWidget*[md->marker_count];
-    for (int ii=0;ii<md->marker_count;++ii) {
+
+    int markCnt = md->marker_count;
+    markerWidgetArray.resize(markCnt);
+    for (int ii=0;ii<markCnt;++ii) {
       markerWidgetArray[ii] = new MarkerWidget(ii,0);
       layout->addWidget(markerWidgetArray[ii]);
     }
@@ -287,7 +289,8 @@ MainWindow::MainWindow(QWidget *parent) :
             this,SLOT(setMarkPoint(int,double,double,double)));
 
     /* */
-    for (int ii=0;ii<41;++ii) {
+
+    for (int ii=0;ii<markCnt;++ii) {
       connect(markerWidgetArray[ii],SIGNAL(markBodySet(int,int)),md,SLOT(changeBodyConnect(int,int)));
       connect(markerWidgetArray[ii],SIGNAL(markConnect(int,bool)),md,SLOT(changeBodyLink(int,bool)));
       connect(markerWidgetArray[ii],SIGNAL(markPosSet(int,double,double,double)),
@@ -353,8 +356,8 @@ MainWindow::MainWindow(QWidget *parent) :
 
 MainWindow::~MainWindow()
 {
-  delete[] markerWidgetArray;
-    delete ui;
+
+  delete ui;
 
 #if defined( BOARD_DATA )
   delete bd;
@@ -580,8 +583,8 @@ void MainWindow::updateLoop()
 
 void MainWindow::usingMarkers(bool used)
 {
-
-  for (int ii=0;ii<50;++ii) {
+  int markCnt = (int) markerWidgetArray.size();
+  for (int ii=0;ii<markCnt;++ii) {
     markerWidgetArray[ii]->setConnect(used);
   }
 }

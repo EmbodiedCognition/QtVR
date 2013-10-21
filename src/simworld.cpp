@@ -188,9 +188,11 @@ void SimWorld::updateSeqFrame()
   }
   if (follow_sequence_source_state==2) {
 
-    //body->applyForceFrame(torqueSeq->getFrame(seqFrame));
-    applyTorquesToBody(torque_sequence->getFrame(sequence_frame));
-    sequence_frame+=1;
+    DataFrame* frame = torque_sequence->getFrame(sequence_frame);
+    if (frame) {
+      applyTorquesToBody(frame);
+      sequence_frame+=1;
+    }
 
   }
 }

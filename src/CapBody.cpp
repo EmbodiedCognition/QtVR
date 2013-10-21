@@ -787,7 +787,8 @@ void CapBody::saveMarkToBodyMap(QString filename)
   QFile file(filename);
   if (!file.open(QFile::WriteOnly | QIODevice::Truncate | QIODevice::Text)) return;
   QTextStream out(&file);
-  for (int ii=0;ii<50;++ii) {
+  int markCnt = (int) marker_to_body.size();
+  for (int ii=0;ii<markCnt;++ii) {
     out << marker_to_body[ii].id << "\n";
   }
 }
@@ -797,7 +798,8 @@ void CapBody::saveMarkRelPosMap(QString filename,bool bodyID)
   QFile file(filename);
   if (!file.open(QFile::WriteOnly | QIODevice::Truncate | QIODevice::Text)) return;
   QTextStream out(&file);
-  for (int ii=0;ii<50;++ii) {
+  int markCnt = (int) marker_to_body.size();
+  for (int ii=0;ii<markCnt;++ii) {
     if (bodyID) {
       out << marker_to_body[ii].id << " ";
     }

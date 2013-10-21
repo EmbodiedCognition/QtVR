@@ -51,20 +51,23 @@ public:
   QVector3D getPosition();
   QQuaternion getQuaternion();
 
-  QMatrix4x4 getTransform();
-  QMatrix4x4 getInvTransform();
-  void getTransform(QMatrix4x4& mat);
-  void getInvTransform(QMatrix4x4& mat);
+  /*
+   * In Qt 4.x, a QMatrix4x4 is stored using
+   * `qreal`, which is usually defined as `double`.
+   * In Qt 5.1, however, it changed to be defined
+   * as a `float`.  This makes cross-compatability
+   * a challenge.
+   */
 
-  void getRMajorTrans(float* m);
-  void getCMajorTrans(float* m);
-  void getRMajorInvTrans(float* m);
-  void getCMajorInvTrans(float* m);
+  void getRMajorTrans(double* m);
+  void getCMajorTrans(double* m);
+  void getRMajorInvTrans(double* m);
+  void getCMajorInvTrans(double* m);
 
   /// Store quaternion Q in matrix m[16]
   /// If m is a column matrix, this
   /// will store the inverse rotation.
-  void quatToRowMajorMat(const QQuaternion& q,float* m);
+  void quatToRowMajorMat(const QQuaternion& q, double* m);
 
 
   void reset();
@@ -73,6 +76,8 @@ public:
   void translateAbsolute(const QVector3D& absDist);
   void rotateRelative(const QQuaternion& quat);
   void rotateAbsolute(const QQuaternion& quat);
+
+
 
 };
 

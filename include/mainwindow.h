@@ -27,7 +27,7 @@
 
 #include <QMainWindow>
 #include <QTimer>
-
+#include <vector>
 
 class MarkerWidget;
 class JointWidget;
@@ -123,7 +123,7 @@ public slots:
 public:
     Ui::MainWindow *ui;  ///< Holds the widgets created in the designer
     /// An array of widgets for controlling marker attachments
-    MarkerWidget** markerWidgetArray;
+    std::vector<MarkerWidget*> markerWidgetArray;
 
 #if defined( BOARD_DATA )
     BoardData* bd;

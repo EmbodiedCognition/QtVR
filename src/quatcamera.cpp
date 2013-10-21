@@ -40,52 +40,12 @@ QQuaternion QuatCamera::getQuaternion()
   return orient;
 }
 
-QMatrix4x4 QuatCamera::getTransform()
-{
-  QMatrix4x4 mat;
-  getTransform(mat);
-  return mat;
-}
-
-QMatrix4x4 QuatCamera::getInvTransform()
-{
-  QMatrix4x4 mat;
-  getInvTransform(mat);
-  return mat;
-}
-
-/**
-  Convert the quaternion and translation
-  to a full 4 by 4 transformation matrix
-  that would render the _camera_ in the
-  right place if seen from another camera.
-
-  We could just apply rotation to the three
-  axis vectors of the identity matrix, but
-  that's not very efficient because of
-  all the zeros in the matrix.
-  */
-void QuatCamera::getTransform(QMatrix4x4& mat)
-{
-  getRMajorTrans( mat.data() );
-}
-
-/**
-  Produce the inverse transform described
-  by the position and orientation so that
-  the matrix mat would transform the world
-  into camera-centric frame-of-reference.
-  */
-void QuatCamera::getInvTransform(QMatrix4x4& mat)
-{
-  getRMajorInvTrans( mat.data() );
-}
 
 /**
   Put the forward transform into m[16]
   as a row-major matrix.
   */
-void QuatCamera::getRMajorTrans(float* m)
+void QuatCamera::getRMajorTrans(double* m)
 {
   quatToRowMajorMat(orient,m);
   // The forward transform simply puts
@@ -95,7 +55,7 @@ void QuatCamera::getRMajorTrans(float* m)
   m[11]= position.z();
 }
 
-void QuatCamera::getCMajorTrans(float* m)
+void QuatCamera::getCMajorTrans(double* m)
 {
   // Using the conjugate produces
   // the transpose representation
@@ -107,7 +67,7 @@ void QuatCamera::getCMajorTrans(float* m)
   m[14] = position.z();
 }
 
-void QuatCamera::getRMajorInvTrans(float* m)
+void QuatCamera::getRMajorInvTrans(double* m)
 {
   quatToRowMajorMat(orient.conjugate(),m);
   // When we invert the transform,
@@ -121,7 +81,7 @@ void QuatCamera::getRMajorInvTrans(float* m)
 
 }
 
-void QuatCamera::getCMajorInvTrans(float* m)
+void QuatCamera::getCMajorInvTrans(double* m)
 {
   // To invert, we'd normally take the conjugate,
   // instead, we'll just use the transpose
@@ -134,7 +94,7 @@ void QuatCamera::getCMajorInvTrans(float* m)
   m[14] = -pos.z();
 }
 
-void QuatCamera::quatToRowMajorMat(const QQuaternion& q, float* m)
+void QuatCamera::quatToRowMajorMat(const QQuaternion& q, double* m)
 {
   // Column 1 would be: q*x*q^-1
   // That's [w x y z]*[0 1 0 0]*[w -x -y -z]
