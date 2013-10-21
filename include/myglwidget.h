@@ -63,6 +63,8 @@ protected:
   virtual void resizeGL(int width, int height);
   virtual void mousePressEvent(QMouseEvent *event);
   virtual void mouseMoveEvent(QMouseEvent *event);
+  virtual void mouseReleaseEvent(QMouseEvent *event);
+  virtual void wheelEvent(QWheelEvent * event);
   virtual void keyPressEvent(QKeyEvent* event);
 
   void applyGeomTransform(dGeomID gg);
@@ -134,7 +136,8 @@ public:
 #if defined( BOARD_DATA )
   BoardData* bd;
 #endif
-  QuatCamera camera;
+  QuatCamera camera; ///< Quaternion based camera
+  QPoint lastPos;    ///< Tracks mouse changes for camera control
   static float light_pos[4];
   static float light_ambient[4];
   static float light_diffuse[4];

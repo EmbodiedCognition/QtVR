@@ -98,11 +98,6 @@ void MyGLWidget::setBodyAlpha(double alpha)
   body_alpha = alpha;
 }
 
-//void MyGLWidget::setAnimationRate(double rate)
-//{
-  //animationTimer.start(int(rate*1000));
-//}
-
 void MyGLWidget::initializeGL()
 {
   glClearColor(0.0f, 0.0f, 0.0f, 0.0f);			// Black Background
@@ -149,37 +144,18 @@ void MyGLWidget::initializeGL()
   //glTexGenfv (GL_T,GL_OBJECT_PLANE,t_params);
   glTexEnvf( GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE );
 
-
-
   quadric = gluNewQuadric();
 
   front_list = glGenLists(1);
   shadow_list = glGenLists(1);
 }
 
+//virtual
 void MyGLWidget::paintGL()
 {
   glMatrixMode( GL_MODELVIEW );
   glLoadIdentity();
   renderScene();
-  /*
-  glMatrixMode( GL_MODELVIEW );
-  glLoadIdentity();
-  glClear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
-
-  glPushMatrix();
-  //glTranslated(0,0,-20);
-  double mat[16];
-  camera.getCMajorInvTrans(mat);
-  glMultMatrixd(mat);
-
-  // Place the light _after_ moving the eye
-
-  glLightfv(GL_LIGHT0, GL_POSITION, lightPos);
-
-  renderSimWorld(simWorld);
-
-  glPopMatrix();*/
 }
 
 void MyGLWidget::animate()
@@ -189,8 +165,6 @@ void MyGLWidget::animate()
 #if defined( BOARD_DATA )
   bd->step();
 #endif
-
-  //this->updateGraphicsScene();
 
   if (follow_camera) {
     dBodyID waist = sim_world->getBody()->body_segments[CapBody::WAIST_BODY];
@@ -204,6 +178,7 @@ void MyGLWidget::animate()
   this->updateGL();
 }
 
+//virtual
 void MyGLWidget::resizeGL(int width, int height)
 {
   if ( height == 0 ) height = 1;
@@ -213,17 +188,46 @@ void MyGLWidget::resizeGL(int width, int height)
   glMatrixMode( GL_PROJECTION );
   glLoadIdentity();
   gluPerspective( fovy, aspect_ratio, near_clip, far_clip );
-
 }
 
+// virtual
 void MyGLWidget::mousePressEvent(QMouseEvent *event)
 {
+  lastPos = event->pos();
+  event->accept();
+}
+
+//virtual
+void MyGLWidget::mouseMoveEvent(QMouseEvent *event)
+{
+  int dx = event->x() - lastPos.x();
+  int dy = event->y() - lastPos.y();
+
+  if (event->buttons() & Qt::LeftButton) {
+    camera.rotateRelative(QQuaternion::fromAxisAndAngle(0,1,0,dx * 0.1));
+    camera.rotateRelative(QQuaternion::fromAxisAndAngle(1,0,0,dy * 0.1));
+  } else if (event->buttons() & Qt::MiddleButton) {
+    camera.translateRelative(QVector3D( -dx * 0.01, dy * 0.01,0));
+  } else if (event->buttons() & Qt::RightButton) {
+    camera.rotateRelative(QQuaternion::fromAxisAndAngle(0,0,1,-dx * 0.1));
+    camera.rotateRelative(QQuaternion::fromAxisAndAngle(1,0,0,dy * 0.1));
+  }
+  lastPos = event->pos();
+  event->accept();
+}
+
+//virtual
+void MyGLWidget::mouseReleaseEvent(QMouseEvent *event)
+{
   event->ignore();
 }
 
-void MyGLWidget::mouseMoveEvent(QMouseEvent *event)
+//virtual
+void MyGLWidget::wheelEvent(QWheelEvent * event)
 {
-  event->ignore();
+  double trans = -0.01 * event->delta();
+  camera.translateRelative(QVector3D( 0,0,trans));
+  event->accept();
 }
 
 void MyGLWidget::keyPressEvent(QKeyEvent* event)
