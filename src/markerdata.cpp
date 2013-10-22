@@ -192,9 +192,9 @@ void MarkerData::step()
 }
 
 
-void MarkerData::setPaused(bool playing)
+void MarkerData::setPaused(bool paused)
 {
-  this->paused = !playing;
+  this->paused = paused;
 }
 
 void MarkerData::setSingleStep()

@@ -59,9 +59,13 @@ public:
   void makeJointWidget(QString label,int joint,
                        int axis,CapBody* cb,
                        QVBoxLayout* lay);
+  void populateJointTab(CapBody* capBody,
+                        QVBoxLayout* layout);
   void makeBodyWidget(QString label,int joint,
                       int axis,CapBody* cb,
                       QVBoxLayout* lay);
+  void populateBodyTab(CapBody* capBody,
+                       QVBoxLayout* layout);
   SimWorld* getWorld();
 
   void writeVMarkerFrame(int cc,int tri,FILE* file);
@@ -71,20 +75,16 @@ public:
 public slots:
   void toggleFullscreenSlot();
 
-  void clickPPA(bool);
-  void clickPPS(bool);
-  void clickPPD(bool);
-
   void playPauseAll(bool);
   void playPauseSim(bool);
   void playPauseData(bool);
+  void updatePlayButtons();
 
   void setMarkMap(int id,int bod);
   void setMarkPoint(int id,double xx,double yy,double zz);
 
   void stepSim();
   void stepData();
-
   void stepAll();
 
   void setDataFrame(int);
@@ -96,6 +96,9 @@ public slots:
   void updateLoop();
 
   void usingMarkers(bool used);
+  void connectMarkers();
+  void releaseMarkers();
+  void updateMarkerAnchors();
 
   void useAngles(bool toggle);
   void useMarkers(bool toggle);
@@ -103,7 +106,7 @@ public slots:
   void useAltForces(bool toggle);
 
   void setDataRange(int maxSize);
-  void loadMarkerFile();
+  void loadMarkerFile(QString filename);
 
 
   void experimentSlot();
@@ -118,6 +121,8 @@ public slots:
   void saveBodyAngles(QString filename);
 
   void useGlobalForces(bool use);
+
+  void markerFileDialog();
 
 
 public:

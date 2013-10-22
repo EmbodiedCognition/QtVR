@@ -57,7 +57,7 @@ CapBody::CapBody(QObject *parent)
   stepsize = .015;
 
   keep_rel_anchors=true;
-  global_forces = true;
+  global_forces = false;
 }
 
 CapBody::~CapBody(void)
@@ -149,19 +149,12 @@ void CapBody::createBody(dWorldID world,dSpaceID space)
   createSphere(R_HEEL_BODY,  R_HEEL_GEOM,  .07);
   createCaps(  R_TARSAL_BODY,   R_TARSAL_GEOM,   .03,.04);
   dBodySetQuaternion(body_segments[R_TARSAL_BODY],turnLeft);
- // createCaps(  R_TOE_BODY,   R_TOE_GEOM,   .03,.03);
- // dBodySetQuaternion(bodies[R_TOE_BODY],turnLeft);
   
   createCaps(  LUP_LEG_BODY, LUP_LEG_GEOM, .10,.30);
   createCaps(  LLO_LEG_BODY, LLO_LEG_GEOM, .08,.28);
   createSphere(L_HEEL_BODY,  L_HEEL_GEOM,  .07);
   createCaps(  L_TARSAL_BODY,   L_TARSAL_GEOM,   .03,.04);
   dBodySetQuaternion(body_segments[L_TARSAL_BODY],turnRight);
- // createCaps(  L_TOE_BODY,   L_TOE_GEOM,   .03,.03);
- // dBodySetQuaternion(bodies[L_TOE_BODY],turnRight);
-
-  //geoms[R_TARSAL_GEOM] = 0;
-  //geoms[L_TARSAL_GEOM] = 0;
 
   // Now the body parts are built, we move the head
   // and then begin creating joints and attaching
@@ -1319,16 +1312,27 @@ void CapBody::restoreState()
   }
 }
 
+/**
+ * @brief CapBody::loadBody Grab model info from file and update the simulation
+ */
 void CapBody::loadBody()
 {
   loadMarkToBodyMap("data/markMap.txt");
   loadMarkRelPosMap("data/posMap.txt");
   loadBodyProperties("data/dimMap.txt");
   loadJointAnchors("data/anchorMap.txt");
+  copyToSim();
 }
 
+/**
+ * @brief CapBody::saveBody Grab the current model state and write it to file
+ *
+ * This saves body dimensions, marker attachments, and joint anchors
+ * for loading again in the future.
+ */
 void CapBody::saveBody()
 {
+  copyFromSim();
   saveMarkToBodyMap("data/markMap.txt");
   saveMarkRelPosMap("data/posMap.txt");
   saveBodyProperties("data/dimMap.txt");
@@ -1341,6 +1345,7 @@ void CapBody::saveBody()
   */
 void CapBody::saveModel()
 {
+
   saveMarkRelPosMap("modelMap.txt",true);
   saveFullBodyProperties("modelBodies.txt");
   saveJointProperties("modelJoints.txt");

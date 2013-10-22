@@ -66,6 +66,8 @@ public:
 
   int size();
 
+  bool isPaused() {return paused;}
+
 
 signals:
   /// We announce when the frame is changed so that the
@@ -74,7 +76,7 @@ signals:
 
 public slots:
 
-  void setPaused(bool);
+  void setPaused(bool paused);
   void setSingleStep();
   void setFrame(int frame);
 
