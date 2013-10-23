@@ -145,7 +145,8 @@ void BoardMarkerData::step()
     singleStep = false;
   }
 
-  for (int ii=0;ii<MARKER_COUNT;++ii) {
+
+  for (int ii=0;ii<markCnt;++ii) {
     int bID = cBody->marker_to_body[ii].id;
     if (tryLink[ii] && (bID>=0) &&
         (cFrame->markers[ii][3]>0) &&

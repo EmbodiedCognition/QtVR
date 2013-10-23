@@ -28,6 +28,7 @@
 #include <QObject>
 #include <ode/ode.h>
 #include <QList>
+#include <vector>
 
 class JointFrame;
 class DataFrame;
@@ -211,7 +212,7 @@ public:
   double joint_offset[JOINT_COUNT][3]; ///< Offset applied to the target (from the GUI)
   double control_limit[JOINT_COUNT][3]; ///< Max force a joint motor can apply to pursue the target
 
-  BodyLink marker_to_body[MARKER_COUNT]; ///< Relationship between markers and bodies.
+  std::vector<BodyLink> marker_to_body; ///< Relationship between markers and bodies.
   PartInfo part_info[BODY_COUNT];
   JointInfo joint_info[JOINT_COUNT];
   double stepsize; ///< Delta time for each step of dynamics (passed in from SimWorld)
@@ -321,6 +322,9 @@ public slots:
   void copyFromSim();
 
   void updateControl();
+
+  void changeMarkLinks(int numMarkers);
+
   void setJointTarget(int jj,int ax, double val);
   void setJointOffset(int jj,int ax, double val);
   void setJointForce(int jj,int ax,double val);
@@ -331,6 +335,8 @@ public slots:
 
   void writeModel();
   void writeMarkers();
+
+
 
 protected:
 

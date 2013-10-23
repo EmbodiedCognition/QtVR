@@ -177,7 +177,7 @@ void SwingData::step()
 
   }
 
-  for (int ii=0;ii<MARKER_COUNT;++ii) {
+  for (int ii=0;ii<markCnt;++ii) {
     int bID = cBody->marker_to_body[ii].id;
     //if (bID!=CapBody::HEAD_BODY &&
 //        bID!=CapBody::L_HEEL_BODY &&
@@ -269,7 +269,7 @@ void SwingData::writeRelPos(FILE* file)
   fprintf(file," %lf %lf %lf %lf ",
          (df->hQuat[0]),(df->hQuat[1]),
          (df->hQuat[2]),(df->hQuat[3]));
-  for (int ii=0;ii<50;++ii) {
+  for (int ii=0;ii<markCnt;++ii) {
     if (cBody->marker_to_body[ii].id>=0) {
       // Find the global coordinate of the
       // relative position to which the

@@ -102,6 +102,7 @@ public:
   void writeAngleFrame(int cc,int tri,FILE* file);
 
 
+  bool isPaused() { return paused;}
 
 signals:
 

@@ -138,7 +138,7 @@ void PokeMarkerData::step()
 
   }
 
-  for (int ii=0;ii<MARKER_COUNT;++ii) {
+  for (int ii=0;ii<markCnt;++ii) {
     int bID = cBody->marker_to_body[ii].id;
     //if (bID!=CapBody::HEAD_BODY &&
 //        bID!=CapBody::L_HEEL_BODY &&

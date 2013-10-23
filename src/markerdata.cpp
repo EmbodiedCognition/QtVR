@@ -25,10 +25,10 @@
 #include "markerdata.h"
 
 #include "CapBody.h"
+#include "gaussrand.h"
 
 MarkerData::MarkerData(dWorldID world,dSpaceID space,QObject *parent) :
-    QObject(parent),
-    randN(rng,norm)
+    QObject(parent)
 {
   this->world=world;
   this->space=space;
@@ -63,9 +63,18 @@ MarkerData::MarkerData(dWorldID world,dSpaceID space,QObject *parent) :
   paused=true;
   single_step=false;
 
+
   use_virtual_markers=false;
 
+  grand = new GaussRand;
+
 }
+
+MarkerData::~MarkerData()
+{
+  delete grand;
+}
+
 
 int MarkerData::size()
 {
@@ -150,13 +159,10 @@ void MarkerData::step()
 
   }
 
-  /*
-    Ugly GUI interactions made it annoying to keep the
-    number of markers sync'ed with the c3d file.  So
-    the number of marker widgets is hard-coded
-    in the .pro file as MARKER_COUNT.
-    */
-  for (int ii=0;ii<MARKER_COUNT;++ii) {
+
+
+
+  for (int ii=0;ii<marker_count;++ii) {
     int bID = body_pointer->marker_to_body[ii].id;
 
     if (try_link[ii] && (bID>=0) &&
@@ -186,9 +192,9 @@ void MarkerData::step()
 }
 
 
-void MarkerData::setPaused(bool playing)
+void MarkerData::setPaused(bool paused)
 {
-  this->paused = !playing;
+  this->paused = paused;
 }
 
 void MarkerData::setSingleStep()
@@ -236,7 +242,7 @@ void MarkerData::captureVirtualMarkers()
   C3dFloatFrame* shadowFrame = new C3dFloatFrame(marker_count);
 
 
-  for (int ii=0;ii<MARKER_COUNT;++ii) {
+  for (int ii=0;ii<marker_count;++ii) {
     if (body_pointer->marker_to_body[ii].id>=0) {
       // Find the global coordinate of the
       // relative position to which the
@@ -288,9 +294,9 @@ void MarkerData::perturbShadowFrame(double sigma)
 {
   int frameCnt = shadow_data.size();
   for (int ii=0;ii<frameCnt;++ii) {
-    for (int jj=0;jj<MARKER_COUNT;++jj) {
+    for (int jj=0;jj<marker_count;++jj) {
       for (int kk=0;kk<3;++kk) {
-        double epsilon = sigma*randN();
+        double epsilon = sigma*grand->next();
         double val = virtual_data[ii]->data[jj].point[kk] + epsilon;
         shadow_data[ii]->data[jj].point[kk] = val;
 

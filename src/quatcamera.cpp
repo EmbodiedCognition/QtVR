@@ -40,46 +40,6 @@ QQuaternion QuatCamera::getQuaternion()
   return orient;
 }
 
-QMatrix4x4 QuatCamera::getTransform()
-{
-  QMatrix4x4 mat;
-  getTransform(mat);
-  return mat;
-}
-
-QMatrix4x4 QuatCamera::getInvTransform()
-{
-  QMatrix4x4 mat;
-  getInvTransform(mat);
-  return mat;
-}
-
-/**
-  Convert the quaternion and translation
-  to a full 4 by 4 transformation matrix
-  that would render the _camera_ in the
-  right place if seen from another camera.
-
-  We could just apply rotation to the three
-  axis vectors of the identity matrix, but
-  that's not very efficient because of
-  all the zeros in the matrix.
-  */
-void QuatCamera::getTransform(QMatrix4x4& mat)
-{
-  getRMajorTrans( mat.data() );
-}
-
-/**
-  Produce the inverse transform described
-  by the position and orientation so that
-  the matrix mat would transform the world
-  into camera-centric frame-of-reference.
-  */
-void QuatCamera::getInvTransform(QMatrix4x4& mat)
-{
-  getRMajorInvTrans( mat.data() );
-}
 
 /**
   Put the forward transform into m[16]
@@ -134,7 +94,7 @@ void QuatCamera::getCMajorInvTrans(double* m)
   m[14] = -pos.z();
 }
 
-void QuatCamera::quatToRowMajorMat(const QQuaternion& q,double* m)
+void QuatCamera::quatToRowMajorMat(const QQuaternion& q, double* m)
 {
   // Column 1 would be: q*x*q^-1
   // That's [w x y z]*[0 1 0 0]*[w -x -y -z]
